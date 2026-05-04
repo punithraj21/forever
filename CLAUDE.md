@@ -24,14 +24,15 @@ A personal countdown UI for Punith Raj's engagement and wedding to Pallavi, with
 
 ## File layout
 
-- `app/page.tsx` — composes the home page
+- `app/page.tsx` — composes the home page (header → countdown cards → Milestones → Our Story → quote → footer)
 - `app/unlock/page.tsx` — unlock form
 - `app/layout.tsx` — root layout, metadata
 - `app/globals.css` — Tailwind directives + Cormorant Garamond / Inter fonts (Google Fonts `@import` MUST come before the `@tailwind` directives — Turbopack enforces strict CSS ordering)
 - `components/Countdown.tsx` — live ticker per event (days/hours/minutes/seconds), updates every second
-- `components/Journey.tsx` — three-milestone timeline + four "By the Numbers" stat tiles, updates every minute
-- `components/MomentsSection.tsx` — Moments grid + unified Add/Edit modal + delete; reads unlock flag from localStorage to gate mutate UI
+- `components/Journey.tsx` — **Milestones** section: three-node horizontal timeline (Today / Engagement / Wedding) + four "By the Numbers" stat tiles, updates every minute. (File still named `Journey.tsx` even though the user-facing heading is "Milestones".)
+- `components/OurStorySection.tsx` — **Our Story** section: vertical chronological timeline of chapters, each with a Day N badge anchored to a connecting rail. Includes unified Add/Edit modal + delete; reads unlock flag from localStorage to gate mutate UI. Fetches with `order(occurred_at, asc)` so Day 1 is first.
 - `lib/supabase.ts` — Supabase client singleton, `Moment` type, `imageUrl()` helper
+- `lib/config.ts` — `DAY_ONE` constant (the day Punith first met Pallavi). Update this to the real date and Day N labels reflow automatically.
 
 ## Supabase setup
 
@@ -87,6 +88,8 @@ The Add/Edit Moment modal uses the canonical scroll-overlay pattern to handle sh
 - Added edit functionality (pencil icon) — Add and Edit share one `MomentFormModal` with optional `existing` prop
 - Fixed modal layout for short viewports (scroll-overlay pattern)
 - Upgraded Next 15.1.6 → 16.2.4 to clear Vercel's vulnerability gate (CVE-2025-29927); reordered `globals.css` `@import` to satisfy Turbopack strict CSS
+- Renamed top three-dot timeline section "The Journey" → "Milestones" to free the word "Journey" / "Story" for the lower section
+- Replaced "Moments" grid with a redesigned **"Our Story"** vertical timeline (`components/OurStorySection.tsx`): each entry shows Day N (computed from `lib/config.ts:DAY_ONE`) anchored to a connecting rail, sorted ascending so Day 1 reads first; copy throughout shifted from "moment" → "chapter"
 
 ## Update protocol for future sessions
 

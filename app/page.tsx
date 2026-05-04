@@ -1,6 +1,6 @@
 import Countdown from "@/components/Countdown";
 import Journey from "@/components/Journey";
-import MomentsSection from "@/components/MomentsSection";
+import OurStorySection from "@/components/OurStorySection";
 
 export default function Home() {
   return (
@@ -40,7 +40,7 @@ export default function Home() {
       </div>
 
       <div className="mt-16 w-full sm:mt-24">
-        <MomentsSection />
+        <OurStorySection />
       </div>
 
       <section className="fade-in mt-16 max-w-2xl text-center sm:mt-24">

@@ -67,7 +67,7 @@ export default function Journey() {
     <div className="w-full space-y-14 sm:space-y-20">
       <section className="fade-in">
         <h3 className="mb-10 text-center font-serif text-3xl font-light tracking-tight text-[#3a2030] sm:text-4xl">
-          The Journey
+          Milestones
         </h3>
         <div className="relative px-2 sm:px-6">
           <div className="absolute left-[16.67%] right-[16.67%] top-[11px] h-px bg-gradient-to-r from-[#3a2030]/40 via-amber-400 to-rose-400" />
