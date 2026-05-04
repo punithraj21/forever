@@ -13,28 +13,33 @@ type Stats = {
   weeksToEngagement: number;
   monthsToWedding: number;
   engagedDays: number;
+  daysSinceEngagement: number;
+  daysSinceWedding: number;
   hoursToWedding: number;
+  hoursSinceWedding: number;
   todayLabel: string;
+  postEngagement: boolean;
+  postWedding: boolean;
 };
 
 function computeStats(now: Date): Stats {
-  const daysToEngagement = Math.max(
-    0,
-    Math.ceil((ENGAGEMENT.getTime() - now.getTime()) / DAY_MS),
-  );
-  const daysToWedding = Math.max(
-    0,
-    Math.ceil((WEDDING.getTime() - now.getTime()) / DAY_MS),
-  );
+  const msToEngagement = ENGAGEMENT.getTime() - now.getTime();
+  const msToWedding = WEDDING.getTime() - now.getTime();
+  const postEngagement = msToEngagement <= 0;
+  const postWedding = msToWedding <= 0;
+
+  const daysToEngagement = Math.max(0, Math.ceil(msToEngagement / DAY_MS));
+  const daysToWedding = Math.max(0, Math.ceil(msToWedding / DAY_MS));
+  const daysSinceEngagement = Math.max(0, Math.floor(-msToEngagement / DAY_MS));
+  const daysSinceWedding = Math.max(0, Math.floor(-msToWedding / DAY_MS));
+
   const weeksToEngagement = Math.ceil(daysToEngagement / 7);
   const monthsToWedding = Math.max(0, Math.round(daysToWedding / 30.44));
   const engagedDays = Math.ceil(
     (WEDDING.getTime() - ENGAGEMENT.getTime()) / DAY_MS,
   );
-  const hoursToWedding = Math.max(
-    0,
-    Math.floor((WEDDING.getTime() - now.getTime()) / HOUR_MS),
-  );
+  const hoursToWedding = Math.max(0, Math.floor(msToWedding / HOUR_MS));
+  const hoursSinceWedding = Math.max(0, Math.floor(-msToWedding / HOUR_MS));
   const todayLabel = now.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -46,12 +51,77 @@ function computeStats(now: Date): Stats {
     weeksToEngagement,
     monthsToWedding,
     engagedDays,
+    daysSinceEngagement,
+    daysSinceWedding,
     hoursToWedding,
+    hoursSinceWedding,
     todayLabel,
+    postEngagement,
+    postWedding,
   };
 }
 
 const fmt = (n: number) => n.toLocaleString("en-US");
+
+type MilestoneState = "past" | "today" | "future";
+type MilestoneItem = {
+  key: "today" | "engagement" | "wedding";
+  title: string;
+  date: string;
+  distance: string;
+  state: MilestoneState;
+  dotClass: string;
+};
+
+function buildMilestoneList(now: Date, s: Stats): MilestoneItem[] {
+  const today: MilestoneItem = {
+    key: "today",
+    title: "Today",
+    date: s.todayLabel,
+    state: "today",
+    dotClass: "bg-[#3a2030]",
+    distance: s.postWedding
+      ? "married ❀"
+      : s.postEngagement
+        ? "we are engaged"
+        : "we are here",
+  };
+
+  const engagement: MilestoneItem = {
+    key: "engagement",
+    title: "Engagement",
+    date: "Jun 21, 2026",
+    state: s.postEngagement ? "past" : "future",
+    dotClass: s.postEngagement ? "bg-amber-300" : "bg-amber-400",
+    distance: s.postEngagement
+      ? s.daysSinceEngagement === 0
+        ? "today ✦"
+        : `${fmt(s.daysSinceEngagement)} days ago ✓`
+      : `in ${fmt(s.daysToEngagement)} days`,
+  };
+
+  const wedding: MilestoneItem = {
+    key: "wedding",
+    title: "Wedding",
+    date: "Dec 14, 2026",
+    state: s.postWedding ? "past" : "future",
+    dotClass: s.postWedding ? "bg-rose-300" : "bg-rose-500",
+    distance: s.postWedding
+      ? s.daysSinceWedding === 0
+        ? "today ❀"
+        : `${fmt(s.daysSinceWedding)} days ago ✓`
+      : `in ${fmt(s.daysToWedding)} days`,
+  };
+
+  // Order: chronological — Today slots between completed and pending.
+  const sortedByTime = [
+    { item: engagement, time: ENGAGEMENT.getTime() },
+    { item: wedding, time: WEDDING.getTime() },
+    { item: today, time: now.getTime() },
+  ].sort((a, b) => a.time - b.time);
+
+  return sortedByTime.map((x) => x.item);
+}
 
 export default function Journey({
   milestonesOnly = false,
@@ -84,24 +154,44 @@ export default function Journey({
         <div className="relative px-2 sm:px-6">
           <div className="absolute left-[16.67%] right-[16.67%] top-[11px] h-px bg-gradient-to-r from-[#3a2030]/40 via-amber-400 to-rose-400" />
           <div className="grid grid-cols-3 gap-3 sm:gap-6">
-            <Milestone
-              dotClass="bg-[#3a2030]"
-              title="Today"
-              date={s?.todayLabel ?? "—"}
-              distance="we are here"
-            />
-            <Milestone
-              dotClass="bg-amber-400"
-              title="Engagement"
-              date="Jun 21, 2026"
-              distance={s ? `in ${fmt(s.daysToEngagement)} days` : "—"}
-            />
-            <Milestone
-              dotClass="bg-rose-500"
-              title="Wedding"
-              date="Dec 14, 2026"
-              distance={s ? `in ${fmt(s.daysToWedding)} days` : "—"}
-            />
+            {(s
+              ? buildMilestoneList(new Date(), s)
+              : [
+                  {
+                    key: "today" as const,
+                    title: "Today",
+                    date: "—",
+                    distance: "—",
+                    state: "today" as const,
+                    dotClass: "bg-[#3a2030]",
+                  },
+                  {
+                    key: "engagement" as const,
+                    title: "Engagement",
+                    date: "Jun 21, 2026",
+                    distance: "—",
+                    state: "future" as const,
+                    dotClass: "bg-amber-400",
+                  },
+                  {
+                    key: "wedding" as const,
+                    title: "Wedding",
+                    date: "Dec 14, 2026",
+                    distance: "—",
+                    state: "future" as const,
+                    dotClass: "bg-rose-500",
+                  },
+                ]
+            ).map((m) => (
+              <Milestone
+                key={m.key}
+                dotClass={m.dotClass}
+                title={m.title}
+                date={m.date}
+                distance={m.distance}
+                state={m.state}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -112,26 +202,14 @@ export default function Journey({
             By the Numbers
           </h3>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-            <StatTile
-              label="Weeks to engagement"
-              value={s?.weeksToEngagement}
-              tone="amber"
-            />
-            <StatTile
-              label="Days as fiancés"
-              value={s?.engagedDays}
-              tone="rose"
-            />
-            <StatTile
-              label="Months to wedding"
-              value={s?.monthsToWedding}
-              tone="rose"
-            />
-            <StatTile
-              label="Hours to 'I do'"
-              value={s?.hoursToWedding}
-              tone="rose"
-            />
+            {buildStatTiles(s).map((tile) => (
+              <StatTile
+                key={tile.label}
+                label={tile.label}
+                value={tile.value}
+                tone={tile.tone}
+              />
+            ))}
           </div>
         </section>
       )}
@@ -139,23 +217,99 @@ export default function Journey({
   );
 }
 
+function buildStatTiles(
+  s: Stats | null,
+): Array<{
+  label: string;
+  value: number | undefined;
+  tone: "amber" | "rose";
+}> {
+  if (!s) {
+    return [
+      { label: "Weeks to engagement", value: undefined, tone: "amber" },
+      { label: "Days as fiancés", value: undefined, tone: "rose" },
+      { label: "Months to wedding", value: undefined, tone: "rose" },
+      { label: "Hours to 'I do'", value: undefined, tone: "rose" },
+    ];
+  }
+
+  if (s.postWedding) {
+    return [
+      { label: "Days married", value: s.daysSinceWedding, tone: "rose" },
+      { label: "Hours married", value: s.hoursSinceWedding, tone: "rose" },
+      { label: "Days we were engaged", value: s.engagedDays, tone: "amber" },
+      { label: "Days since Day 1", value: s.daysSinceWedding, tone: "rose" },
+    ];
+  }
+
+  if (s.postEngagement) {
+    return [
+      { label: "Days engaged", value: s.daysSinceEngagement, tone: "amber" },
+      {
+        label: "Days as fiancés (total)",
+        value: s.engagedDays,
+        tone: "amber",
+      },
+      {
+        label: "Weeks to wedding",
+        value: Math.ceil(s.daysToWedding / 7),
+        tone: "rose",
+      },
+      { label: "Hours to 'I do'", value: s.hoursToWedding, tone: "rose" },
+    ];
+  }
+
+  return [
+    { label: "Weeks to engagement", value: s.weeksToEngagement, tone: "amber" },
+    { label: "Days as fiancés", value: s.engagedDays, tone: "rose" },
+    { label: "Months to wedding", value: s.monthsToWedding, tone: "rose" },
+    { label: "Hours to 'I do'", value: s.hoursToWedding, tone: "rose" },
+  ];
+}
+
 function Milestone({
   dotClass,
   title,
   date,
   distance,
+  state = "future",
 }: {
   dotClass: string;
   title: string;
   date: string;
   distance: string;
+  state?: MilestoneState;
 }) {
+  const titleClass =
+    state === "past"
+      ? "text-[#7a5560]"
+      : state === "today"
+        ? "text-[#3a2030]"
+        : "text-[#3a2030]";
   return (
     <div className="flex flex-col items-center text-center">
       <div
-        className={`relative z-10 h-[22px] w-[22px] rounded-full border-4 border-white shadow-[0_4px_12px_rgba(180,80,110,0.35)] ${dotClass}`}
-      />
-      <div className="mt-3 font-serif text-lg font-medium text-[#3a2030] sm:text-xl">
+        className={`relative z-10 flex h-[22px] w-[22px] items-center justify-center rounded-full border-4 border-white shadow-[0_4px_12px_rgba(180,80,110,0.35)] ${dotClass}`}
+      >
+        {state === "past" && (
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M5 12l5 5L20 7" />
+          </svg>
+        )}
+      </div>
+      <div
+        className={`mt-3 font-serif text-lg font-medium sm:text-xl ${titleClass}`}
+      >
         {title}
       </div>
       <div className="text-xs text-[#7a5560] sm:text-sm">{date}</div>

@@ -45,11 +45,11 @@ export default function Home() {
 
       <section className="fade-in mt-16 max-w-2xl text-center sm:mt-24">
         <p className="font-serif text-xl italic leading-relaxed text-[#5a3a4a] sm:text-2xl">
-          &ldquo;Love does not consist of gazing at each other,
-          but in looking outward together in the same direction.&rdquo;
+          &ldquo;Compromise, communicate, and never go to bed angry - the three
+          pieces of advice to our happy life.&rdquo;
         </p>
         <p className="mt-4 text-xs uppercase tracking-[0.22em] text-[#9a7080]">
-          — Antoine de Saint-Exupéry
+          — Punith Raj
         </p>
       </section>
 

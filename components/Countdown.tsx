@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-type TimeLeft = {
+const DAY_MS = 1000 * 60 * 60 * 24;
+
+type TimeState = {
+  mode: "countdown" | "elapsed";
   days: number;
   hours: number;
   minutes: number;
@@ -10,14 +13,15 @@ type TimeLeft = {
   totalMs: number;
 };
 
-function getTimeLeft(target: Date): TimeLeft {
+function getTimeState(target: Date): TimeState {
   const totalMs = target.getTime() - Date.now();
-  const clamped = Math.max(0, totalMs);
-  const days = Math.floor(clamped / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((clamped / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((clamped / (1000 * 60)) % 60);
-  const seconds = Math.floor((clamped / 1000) % 60);
-  return { days, hours, minutes, seconds, totalMs };
+  const mode: TimeState["mode"] = totalMs > 0 ? "countdown" : "elapsed";
+  const abs = Math.abs(totalMs);
+  const days = Math.floor(abs / DAY_MS);
+  const hours = Math.floor((abs / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((abs / (1000 * 60)) % 60);
+  const seconds = Math.floor((abs / 1000) % 60);
+  return { mode, days, hours, minutes, seconds, totalMs };
 }
 
 const pad = (n: number) => n.toString().padStart(2, "0");
@@ -28,6 +32,8 @@ type Props = {
   targetISO: string;
   accent: "rose" | "amber";
   emoji: string;
+  /** Adjective shown when the date has passed, e.g. "engaged", "married". */
+  passedVerb?: string;
 };
 
 const accentStyles = {
@@ -55,24 +61,27 @@ export default function Countdown({
   targetISO,
   accent,
   emoji,
+  passedVerb,
 }: Props) {
   const target = new Date(targetISO);
-  const [time, setTime] = useState<TimeLeft | null>(null);
+  const [time, setTime] = useState<TimeState | null>(null);
   const styles = accentStyles[accent];
 
   useEffect(() => {
-    setTime(getTimeLeft(target));
-    const id = setInterval(() => setTime(getTimeLeft(target)), 1000);
+    setTime(getTimeState(target));
+    const id = setInterval(() => setTime(getTimeState(target)), 1000);
     return () => clearInterval(id);
   }, [targetISO]);
 
-  const isPast = time !== null && time.totalMs <= 0;
+  const isPast = time !== null && time.mode === "elapsed";
   const dateLabel = target.toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+
+  const effectiveSubtitle = isPast && passedVerb ? passedVerb : subtitle;
 
   return (
     <div
@@ -86,13 +95,18 @@ export default function Countdown({
         <span
           className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] ${styles.badge}`}
         >
-          <span aria-hidden>{emoji}</span>
-          {subtitle}
+          <span aria-hidden>{isPast ? "✓" : emoji}</span>
+          {effectiveSubtitle}
         </span>
         <h2 className="font-serif text-4xl font-medium tracking-tight text-[#3a2030] sm:text-5xl">
           {title}
         </h2>
         <p className="text-sm text-[#7a5560] sm:text-base">{dateLabel}</p>
+        {isPast && passedVerb && (
+          <p className="font-serif text-sm italic text-[#7a5560] sm:text-base">
+            {passedVerb} for
+          </p>
+        )}
       </div>
 
       <div className="mt-8 grid grid-cols-4 gap-3 sm:gap-4">
@@ -123,8 +137,10 @@ export default function Countdown({
       </div>
 
       {isPast && (
-        <p className="mt-6 text-center font-serif text-lg italic text-[#7a5560]">
-          The day has arrived.
+        <p className="mt-6 text-center font-serif text-base italic text-[#7a5560]">
+          {passedVerb
+            ? "and counting…"
+            : "The day has arrived."}
         </p>
       )}
     </div>
