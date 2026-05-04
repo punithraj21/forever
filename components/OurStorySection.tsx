@@ -6,6 +6,7 @@ import {
   type FormEvent,
   type MouseEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   supabase,
   imageUrl,
@@ -549,7 +550,9 @@ function ChapterFormModal({
     if (e.target === e.currentTarget && !saving) onClose();
   };
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 overflow-y-auto bg-[#3a2030]/40 backdrop-blur-sm"
       onClick={closeOnBackdrop}
@@ -731,7 +734,8 @@ function ChapterFormModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -802,17 +806,26 @@ function Lightbox({
   }, [onClose]);
 
   if (total === 0) return null;
+  if (typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
-      className="fade-in fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-sm"
       onClick={onClose}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={imageUrl(paths[safeIndex])}
+        alt={alt}
+        onClick={(e) => e.stopPropagation()}
+        className="absolute inset-0 h-full w-full cursor-default object-contain"
+      />
+
       <button
         type="button"
         onClick={onClose}
         aria-label="Close"
-        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white shadow-md transition hover:bg-white/20"
+        className="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 text-white shadow-md backdrop-blur-sm transition hover:bg-white/20"
       >
         <svg
           width="20"
@@ -839,7 +852,7 @@ function Lightbox({
               e.stopPropagation();
               setIndex((i) => i - 1);
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white shadow-md transition hover:bg-white/20"
+            className="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white shadow-md backdrop-blur-sm transition hover:bg-white/20"
           >
             <svg
               width="22"
@@ -862,7 +875,7 @@ function Lightbox({
               e.stopPropagation();
               setIndex((i) => i + 1);
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white shadow-md transition hover:bg-white/20"
+            className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white shadow-md backdrop-blur-sm transition hover:bg-white/20"
           >
             <svg
               width="22"
@@ -878,43 +891,34 @@ function Lightbox({
               <path d="M9 18l6-6-6-6" />
             </svg>
           </button>
+
+          <div className="absolute bottom-14 left-1/2 z-10 flex -translate-x-1/2 gap-2 rounded-full bg-white/10 px-3 py-2 backdrop-blur-sm">
+            {paths.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Show photo ${i + 1}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIndex(i);
+                }}
+                className={`h-2 rounded-full transition-all ${
+                  i === safeIndex
+                    ? "w-6 bg-white"
+                    : "w-2 bg-white/50 hover:bg-white/80"
+                }`}
+              />
+            ))}
+          </div>
         </>
       )}
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={imageUrl(paths[safeIndex])}
-        alt={alt}
-        onClick={(e) => e.stopPropagation()}
-        className="max-h-[88vh] max-w-[88vw] cursor-default rounded-lg object-contain shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]"
-      />
-
-      {total > 1 && (
-        <div className="absolute bottom-16 left-1/2 flex -translate-x-1/2 gap-2 rounded-full bg-white/10 px-3 py-2 backdrop-blur-sm">
-          {paths.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              aria-label={`Show photo ${i + 1}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIndex(i);
-              }}
-              className={`h-2 rounded-full transition-all ${
-                i === safeIndex
-                  ? "w-6 bg-white"
-                  : "w-2 bg-white/50 hover:bg-white/80"
-              }`}
-            />
-          ))}
-        </div>
-      )}
-
-      <p className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm">
+      <p className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full bg-white/10 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm">
         {total > 1
           ? `${safeIndex + 1} of ${total} · ← → to navigate · Esc to close`
           : "Esc or click outside to close"}
       </p>
-    </div>
+    </div>,
+    document.body,
   );
 }
