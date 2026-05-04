@@ -7,17 +7,8 @@ import {
   type MouseEvent,
 } from "react";
 import { supabase, imageUrl, type Moment } from "@/lib/supabase";
-import { DAY_ONE } from "@/lib/config";
 
 const UNLOCK_KEY = "moments_unlocked";
-const DAY_MS = 1000 * 60 * 60 * 24;
-
-function dayNumber(occurredAt: string): number {
-  const occurred = new Date(occurredAt).setHours(0, 0, 0, 0);
-  const start = new Date(DAY_ONE).setHours(0, 0, 0, 0);
-  const diff = Math.round((occurred - start) / DAY_MS) + 1;
-  return Math.max(1, diff);
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -41,12 +32,15 @@ export default function OurStorySection() {
   const [error, setError] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const [editing, setEditing] = useState<Moment | "new" | null>(null);
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(
+    null,
+  );
 
   const refresh = async () => {
     const { data, error } = await supabase
       .from("moments")
       .select("*")
-      .order("occurred_at", { ascending: true });
+      .order("occurred_at", { ascending: false });
     if (error) {
       setError(error.message);
       return;
@@ -74,9 +68,10 @@ export default function OurStorySection() {
     refresh();
   };
 
-  const totalDays = moments && moments.length > 0
-    ? dayNumber(moments[moments.length - 1].occurred_at)
-    : 0;
+  const chapterCount = moments?.length ?? 0;
+  // Query is descending (newest first), so the original "Day 1" chapter is the LAST item.
+  const firstMoment =
+    moments && moments.length > 0 ? moments[moments.length - 1] : null;
 
   return (
     <section className="fade-in w-full">
@@ -93,17 +88,19 @@ export default function OurStorySection() {
         <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-rose-300 to-transparent" />
       </div>
 
-      <div className="mt-12 flex flex-col items-center gap-3">
-        <DayBadge label="Day 1" big />
-        <p className="font-serif text-base italic text-[#7a5560]">
-          {formatShortDate(DAY_ONE)} — where it began
-        </p>
-        {totalDays > 0 && (
-          <p className="text-[11px] uppercase tracking-[0.22em] text-[#9a7080]">
-            {totalDays.toLocaleString()} days written so far
+      {firstMoment && (
+        <div className="mt-12 flex flex-col items-center gap-3">
+          <DayBadge label="Day 1" big />
+          <p className="font-serif text-base italic text-[#7a5560]">
+            {formatShortDate(firstMoment.occurred_at)} — where it began
           </p>
-        )}
-      </div>
+          {chapterCount > 1 && (
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#9a7080]">
+              {chapterCount} chapters written so far
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="mt-10 flex justify-center">
         {unlocked ? (
@@ -158,13 +155,15 @@ export default function OurStorySection() {
           />
 
           <div className="space-y-10">
-            {moments.map((m) => (
+            {moments.map((m, index) => (
               <ChapterRow
                 key={m.id}
                 m={m}
+                day={moments.length - index}
                 unlocked={unlocked}
                 onEdit={() => setEditing(m)}
                 onDelete={() => onDelete(m)}
+                onViewImage={(src, alt) => setLightbox({ src, alt })}
               />
             ))}
           </div>
@@ -188,6 +187,14 @@ export default function OurStorySection() {
           }}
         />
       )}
+
+      {lightbox && (
+        <Lightbox
+          src={lightbox.src}
+          alt={lightbox.alt}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </section>
   );
 }
@@ -206,16 +213,19 @@ function DayBadge({ label, big = false }: { label: string; big?: boolean }) {
 
 function ChapterRow({
   m,
+  day,
   unlocked,
   onEdit,
   onDelete,
+  onViewImage,
 }: {
   m: Moment;
+  day: number;
   unlocked: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onViewImage: (src: string, alt: string) => void;
 }) {
-  const day = dayNumber(m.occurred_at);
   const date = formatDate(m.occurred_at);
 
   return (
@@ -234,15 +244,22 @@ function ChapterRow({
 
       <article className="group relative overflow-hidden rounded-2xl border border-rose-200/60 bg-white/80 shadow-[0_10px_30px_-12px_rgba(180,80,110,0.25)] backdrop-blur-sm transition hover:shadow-[0_20px_40px_-15px_rgba(180,80,110,0.35)]">
         {m.image_path && (
-          <div className="aspect-[16/9] w-full overflow-hidden bg-rose-50">
+          <button
+            type="button"
+            onClick={() =>
+              onViewImage(imageUrl(m.image_path!), m.title ?? "A chapter")
+            }
+            className="block aspect-[16/9] w-full cursor-zoom-in overflow-hidden bg-rose-50"
+            aria-label="View photo"
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl(m.image_path)}
               alt={m.title ?? "A chapter"}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.02]"
               loading="lazy"
             />
-          </div>
+          </button>
         )}
         <div className="p-5 sm:p-6">
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-rose-500 sm:hidden">
@@ -357,7 +374,6 @@ function ChapterFormModal({
   const isEdit = !!existing;
   const currentImagePath = existing?.image_path ?? null;
   const willHaveImage = file !== null || (currentImagePath && !removeImage);
-  const previewDay = dayNumber(`${date}T12:00:00`);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -436,7 +452,7 @@ function ChapterFormModal({
           className="w-full max-w-md rounded-3xl border border-rose-200 bg-white p-7 shadow-2xl"
         >
           <p className="mb-2 text-xs uppercase tracking-[0.18em] text-rose-500">
-            {isEdit ? "edit chapter" : `chapter · day ${previewDay}`}
+            {isEdit ? "edit chapter" : "a new chapter"}
           </p>
           <h4 className="mb-5 font-serif text-2xl font-medium text-[#3a2030]">
             {isEdit ? "Reshape this memory" : "Another day with Pallavi"}
@@ -566,5 +582,69 @@ function Field({
       </span>
       {children}
     </label>
+  );
+}
+
+function Lightbox({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fade-in fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white shadow-md transition hover:bg-white/20"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M18 6L6 18" />
+          <path d="M6 6l12 12" />
+        </svg>
+      </button>
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[92vh] max-w-[92vw] cursor-default rounded-lg object-contain shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]"
+      />
+
+      <p className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm">
+        Esc or click outside to close
+      </p>
+    </div>
   );
 }

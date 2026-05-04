@@ -32,7 +32,6 @@ A personal countdown UI for Punith Raj's engagement and wedding to Pallavi, with
 - `components/Journey.tsx` — **Milestones** section: three-node horizontal timeline (Today / Engagement / Wedding) + four "By the Numbers" stat tiles, updates every minute. (File still named `Journey.tsx` even though the user-facing heading is "Milestones".)
 - `components/OurStorySection.tsx` — **Our Story** section: vertical chronological timeline of chapters, each with a Day N badge anchored to a connecting rail. Includes unified Add/Edit modal + delete; reads unlock flag from localStorage to gate mutate UI. Fetches with `order(occurred_at, asc)` so Day 1 is first.
 - `lib/supabase.ts` — Supabase client singleton, `Moment` type, `imageUrl()` helper
-- `lib/config.ts` — `DAY_ONE` constant (the day Punith first met Pallavi). Update this to the real date and Day N labels reflow automatically.
 
 ## Supabase setup
 
@@ -89,7 +88,8 @@ The Add/Edit Moment modal uses the canonical scroll-overlay pattern to handle sh
 - Fixed modal layout for short viewports (scroll-overlay pattern)
 - Upgraded Next 15.1.6 → 16.2.4 to clear Vercel's vulnerability gate (CVE-2025-29927); reordered `globals.css` `@import` to satisfy Turbopack strict CSS
 - Renamed top three-dot timeline section "The Journey" → "Milestones" to free the word "Journey" / "Story" for the lower section
-- Replaced "Moments" grid with a redesigned **"Our Story"** vertical timeline (`components/OurStorySection.tsx`): each entry shows Day N (computed from `lib/config.ts:DAY_ONE`) anchored to a connecting rail, sorted ascending so Day 1 reads first; copy throughout shifted from "moment" → "chapter"
+- Replaced "Moments" grid with a redesigned **"Our Story"** vertical timeline (`components/OurStorySection.tsx`): each entry shows Day N anchored to a connecting rail, sorted ascending so Day 1 reads first; copy throughout shifted from "moment" → "chapter"
+- **Day N semantics: chapter ordinal, not calendar days.** Punith and Pallavi don't meet every day, so `Day N` = the N-th chapter (1, 2, 3, …) when sorted by `occurred_at` ascending. The "Day 1 — where it began" anchor at the top of Our Story now derives its date from the *first chapter's* `occurred_at` rather than a hardcoded constant; `lib/config.ts` was deleted accordingly. **Don't reintroduce a calendar-day computation.**
 
 ## Update protocol for future sessions
 
