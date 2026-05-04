@@ -43,12 +43,15 @@ export default function OurStorySection() {
     initial: number;
     alt: string;
   } | null>(null);
+  const [detail, setDetail] = useState<{ m: Moment; day: number } | null>(
+    null,
+  );
 
   const refresh = async () => {
     const { data, error } = await supabase
       .from("moments")
       .select("*")
-      .order("occurred_at", { ascending: false });
+      .order("occurred_at", { ascending: true });
     if (error) {
       setError(error.message);
       return;
@@ -77,9 +80,8 @@ export default function OurStorySection() {
   };
 
   const chapterCount = moments?.length ?? 0;
-  // Query is descending (newest first), so the original "Day 1" chapter is the LAST item.
-  const firstMoment =
-    moments && moments.length > 0 ? moments[moments.length - 1] : null;
+  // Query is ascending (Day 1 first), so the first chapter sets the "where it began" anchor.
+  const firstMoment = moments && moments.length > 0 ? moments[0] : null;
 
   return (
     <section className="fade-in w-full">
@@ -163,19 +165,23 @@ export default function OurStorySection() {
           />
 
           <div className="space-y-10">
-            {moments.map((m, index) => (
-              <ChapterRow
-                key={m.id}
-                m={m}
-                day={moments.length - index}
-                unlocked={unlocked}
-                onEdit={() => setEditing(m)}
-                onDelete={() => onDelete(m)}
-                onViewImages={(paths, initial, alt) =>
-                  setLightbox({ paths, initial, alt })
-                }
-              />
-            ))}
+            {moments.map((m, index) => {
+              const day = index + 1;
+              return (
+                <ChapterRow
+                  key={m.id}
+                  m={m}
+                  day={day}
+                  unlocked={unlocked}
+                  onEdit={() => setEditing(m)}
+                  onDelete={() => onDelete(m)}
+                  onOpenDetail={() => setDetail({ m, day })}
+                  onViewImages={(paths, initial, alt) =>
+                    setLightbox({ paths, initial, alt })
+                  }
+                />
+              );
+            })}
           </div>
 
           <div className="mt-10 flex flex-col items-center gap-3">
@@ -206,6 +212,17 @@ export default function OurStorySection() {
           onClose={() => setLightbox(null)}
         />
       )}
+
+      {detail && (
+        <ChapterDetailModal
+          m={detail.m}
+          day={detail.day}
+          onClose={() => setDetail(null)}
+          onViewImages={(paths, initial, alt) =>
+            setLightbox({ paths, initial, alt })
+          }
+        />
+      )}
     </section>
   );
 }
@@ -228,6 +245,7 @@ function ChapterRow({
   unlocked,
   onEdit,
   onDelete,
+  onOpenDetail,
   onViewImages,
 }: {
   m: Moment;
@@ -235,6 +253,7 @@ function ChapterRow({
   unlocked: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onOpenDetail: () => void;
   onViewImages: (paths: string[], initial: number, alt: string) => void;
 }) {
   const date = formatDate(m.occurred_at);
@@ -360,7 +379,11 @@ function ChapterRow({
             )}
           </div>
         )}
-        <div className="p-5 sm:p-6">
+        <button
+          type="button"
+          onClick={onOpenDetail}
+          className="block w-full cursor-pointer p-5 text-left transition hover:bg-rose-50/40 sm:p-6"
+        >
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-rose-500 sm:hidden">
             Day {day} · {date}
           </div>
@@ -370,11 +393,14 @@ function ChapterRow({
             </h4>
           )}
           {m.note && (
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#5a3a4a]">
+            <p className="mt-2 line-clamp-4 whitespace-pre-wrap text-sm leading-relaxed text-[#5a3a4a]">
               {m.note}
             </p>
           )}
-        </div>
+          <span className="mt-3 inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-[0.18em] text-rose-500 opacity-70 transition group-hover:opacity-100">
+            Read full chapter →
+          </span>
+        </button>
 
         {unlocked && (
           <div className="absolute right-3 top-3 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
@@ -739,6 +765,191 @@ function ChapterFormModal({
   );
 }
 
+function ChapterDetailModal({
+  m,
+  day,
+  onClose,
+  onViewImages,
+}: {
+  m: Moment;
+  day: number;
+  onClose: () => void;
+  onViewImages: (paths: string[], initial: number, alt: string) => void;
+}) {
+  const photos = m.image_paths ?? [];
+  const total = photos.length;
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const safeIndex = total > 0 ? carouselIndex % total : 0;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  if (typeof document === "undefined") return null;
+
+  const longDate = new Date(m.occurred_at).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[55] overflow-y-auto bg-[#3a2030]/55 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="flex min-h-full items-center justify-center p-4 sm:p-8"
+        onClick={onClose}
+      >
+        <article
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-rose-200 bg-white shadow-[0_30px_80px_-20px_rgba(180,80,110,0.45)]"
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute right-4 top-4 z-10 rounded-full bg-white/90 p-2 text-[#3a2030] shadow-md backdrop-blur-sm transition hover:bg-white"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M18 6L6 18" />
+              <path d="M6 6l12 12" />
+            </svg>
+          </button>
+
+          {total > 0 && (
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-rose-50 sm:aspect-[16/10]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageUrl(photos[safeIndex])}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  onViewImages(photos, safeIndex, m.title ?? "A chapter")
+                }
+                className="relative block h-full w-full cursor-zoom-in"
+                aria-label="View photo full screen"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrl(photos[safeIndex])}
+                  alt={m.title ?? "A chapter"}
+                  className="h-full w-full object-contain"
+                />
+              </button>
+
+              {total > 1 && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Previous photo"
+                    onClick={() =>
+                      setCarouselIndex((i) => (i - 1 + total) % total)
+                    }
+                    className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/85 p-2 text-[#3a2030] shadow-md transition hover:bg-white"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Next photo"
+                    onClick={() => setCarouselIndex((i) => (i + 1) % total)}
+                    className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/85 p-2 text-[#3a2030] shadow-md transition hover:bg-white"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+
+                  <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5 rounded-full bg-black/30 px-2 py-1 backdrop-blur-sm">
+                    {photos.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        aria-label={`Show photo ${i + 1}`}
+                        onClick={() => setCarouselIndex(i)}
+                        className={`h-1.5 rounded-full transition-all ${
+                          i === safeIndex
+                            ? "w-5 bg-white"
+                            : "w-1.5 bg-white/60 hover:bg-white/80"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <div className="px-6 py-8 sm:px-10 sm:py-12">
+            <p className="mb-3 text-xs font-medium uppercase tracking-[0.22em] text-rose-500">
+              Day {day} · {longDate}
+            </p>
+            {m.title && (
+              <h2 className="font-serif text-3xl font-medium leading-tight text-[#3a2030] sm:text-4xl">
+                {m.title}
+              </h2>
+            )}
+            {m.note && (
+              <p className="mt-5 whitespace-pre-wrap font-serif text-base leading-relaxed text-[#3a2030] sm:text-lg sm:leading-relaxed">
+                {m.note}
+              </p>
+            )}
+          </div>
+        </article>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 function extractErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
   if (typeof err === "string") return err;
@@ -810,7 +1021,7 @@ function Lightbox({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] bg-black"
       onClick={onClose}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}

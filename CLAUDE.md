@@ -61,9 +61,15 @@ The publishable key (`sb_publishable_...`) is Supabase's new client-safe key for
 - `MomentsSection` reads the flag on mount; without it, only the read-only grid renders and a small "unlock to add" link replaces the +Add button
 - This is **friction, not security** — anyone with the bundle can grep for the secret. Acceptable because the GitHub repo is private. If the repo ever goes public, swap to Supabase Auth and tighten RLS to `auth.uid()` checks.
 
-## Modal layout pattern
+## Modal & lightbox layout pattern
 
-The Add/Edit Moment modal uses the canonical scroll-overlay pattern to handle short viewports:
+The Add/Edit Chapter modal AND the photo Lightbox are both rendered via `ReactDOM.createPortal(..., document.body)`. **This is required**, not optional, because:
+
+- `globals.css:.fade-in` uses `transform: translateY(...)` with `animation-fill-mode: both`. After the animation runs, the transform value lingers (`translateY(0)`).
+- Per the CSS spec, **any** `transform` value other than `none` makes that element a containing block for its `position: fixed` descendants. Result: a `fixed inset-0` modal nested inside a `.fade-in` ancestor sizes itself to the ancestor (often a chapter card) instead of the viewport, and ends up clipped, scrolled, or off-screen.
+- Portaling to `document.body` escapes every ancestor's transform context, so `fixed inset-0` truly means "fill the viewport."
+
+The form modal also uses the scroll-overlay pattern for short viewports:
 
 ```
 <div fixed inset-0 overflow-y-auto>           ← outer overlay scrolls
@@ -72,6 +78,8 @@ The Add/Edit Moment modal uses the canonical scroll-overlay pattern to handle sh
 ```
 
 `flex items-center` directly on an `overflow-y-auto` container is broken — it pushes content above the scrollable region when the child is taller than the parent. Don't refactor this back to a single-div setup.
+
+**Don't remove the `createPortal` calls** unless you also change `.fade-in` to drop its transform (which would lose the y-slide on entry).
 
 ## Build / deploy
 
@@ -94,6 +102,10 @@ The Add/Edit Moment modal uses the canonical scroll-overlay pattern to handle sh
 - **Day N semantics: chapter ordinal, not calendar days.** Punith and Pallavi don't meet every day, so `Day N` = the N-th chapter (1, 2, 3, …) when sorted by `occurred_at` ascending. The "Day 1 — where it began" anchor at the top of Our Story now derives its date from the *first chapter's* `occurred_at` rather than a hardcoded constant; `lib/config.ts` was deleted accordingly. **Don't reintroduce a calendar-day computation.**
 - Reversed Our Story order to newest-first (the Day badge formula is `moments.length - index` so Day 1 still points to the original first meet, but the latest reads at the top of the timeline)
 - Added click-to-view photo lightbox in chapter cards: image button opens a fullscreen modal (z-60) with dark backdrop, Esc / outside-click / X to close, body-scroll locked while open
+- Up to 3 photos per chapter — replaced `image_path text` with `image_paths text[]` (`MAX_PHOTOS_PER_CHAPTER = 3` in `lib/supabase.ts`); chapter cards show a carousel with arrows, dots, and a `1/N` counter; lightbox supports prev/next + ←/→ keys; modal lets users mix kept-existing photos and new uploads up to the cap
+- Cards switched from `aspect-[16/9]` `object-cover` to `aspect-[4/3]` `object-contain` with a soft blurred copy of the same image as background, so portrait photos aren't cropped
+- Modals (form + lightbox) render via `ReactDOM.createPortal(..., document.body)` to escape `.fade-in`'s lingering `transform: translateY(0)`, which otherwise breaks `fixed inset-0` sizing — see "Modal & lightbox layout pattern" above
+- Hardened error display in the form modal: Supabase errors are plain objects (not `Error` instances), so a dedicated `extractErrorMessage` helper unwraps `.message` / `.error` / falls back to `JSON.stringify` instead of rendering `[object Object]`
 - Added `/wallpaper` route — a one-screen no-scroll view with just the header, countdown cards, and Milestones, intended to be pointed at by Lively Wallpaper or similar. The home page (`/`) is unchanged for normal browser viewing.
 
 ## Update protocol for future sessions
