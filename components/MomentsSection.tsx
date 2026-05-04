@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type MouseEvent } from "react";
 import { supabase, imageUrl, type Moment } from "@/lib/supabase";
 
 const UNLOCK_KEY = "moments_unlocked";
@@ -321,17 +321,24 @@ function MomentFormModal({
     }
   };
 
+  const closeOnBackdrop = (e: MouseEvent) => {
+    if (e.target === e.currentTarget && !saving) onClose();
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#3a2030]/40 p-4 backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !saving) onClose();
-      }}
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#3a2030]/40 backdrop-blur-sm"
+      onClick={closeOnBackdrop}
     >
-      <form
-        onSubmit={onSubmit}
-        className="w-full max-w-md rounded-3xl border border-rose-200 bg-white p-7 shadow-2xl"
+      <div
+        className="flex min-h-full items-center justify-center p-4"
+        onClick={closeOnBackdrop}
       >
+        <form
+          onSubmit={onSubmit}
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-md rounded-3xl border border-rose-200 bg-white p-7 shadow-2xl"
+        >
         <h4 className="mb-1 font-serif text-2xl font-medium text-[#3a2030]">
           {isEdit ? "Edit moment" : "A moment with Pallavi"}
         </h4>
@@ -440,6 +447,7 @@ function MomentFormModal({
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 }
