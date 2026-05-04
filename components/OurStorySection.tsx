@@ -6,7 +6,12 @@ import {
   type FormEvent,
   type MouseEvent,
 } from "react";
-import { supabase, imageUrl, type Moment } from "@/lib/supabase";
+import {
+  supabase,
+  imageUrl,
+  MAX_PHOTOS_PER_CHAPTER,
+  type Moment,
+} from "@/lib/supabase";
 
 const UNLOCK_KEY = "moments_unlocked";
 
@@ -32,9 +37,11 @@ export default function OurStorySection() {
   const [error, setError] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const [editing, setEditing] = useState<Moment | "new" | null>(null);
-  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(
-    null,
-  );
+  const [lightbox, setLightbox] = useState<{
+    paths: string[];
+    initial: number;
+    alt: string;
+  } | null>(null);
 
   const refresh = async () => {
     const { data, error } = await supabase
@@ -57,8 +64,8 @@ export default function OurStorySection() {
   }, []);
 
   const onDelete = async (m: Moment) => {
-    if (m.image_path) {
-      await supabase.storage.from("moments").remove([m.image_path]);
+    if (m.image_paths && m.image_paths.length > 0) {
+      await supabase.storage.from("moments").remove(m.image_paths);
     }
     const { error } = await supabase.from("moments").delete().eq("id", m.id);
     if (error) {
@@ -163,7 +170,9 @@ export default function OurStorySection() {
                 unlocked={unlocked}
                 onEdit={() => setEditing(m)}
                 onDelete={() => onDelete(m)}
-                onViewImage={(src, alt) => setLightbox({ src, alt })}
+                onViewImages={(paths, initial, alt) =>
+                  setLightbox({ paths, initial, alt })
+                }
               />
             ))}
           </div>
@@ -190,7 +199,8 @@ export default function OurStorySection() {
 
       {lightbox && (
         <Lightbox
-          src={lightbox.src}
+          paths={lightbox.paths}
+          initialIndex={lightbox.initial}
           alt={lightbox.alt}
           onClose={() => setLightbox(null)}
         />
@@ -217,16 +227,20 @@ function ChapterRow({
   unlocked,
   onEdit,
   onDelete,
-  onViewImage,
+  onViewImages,
 }: {
   m: Moment;
   day: number;
   unlocked: boolean;
   onEdit: () => void;
   onDelete: () => void;
-  onViewImage: (src: string, alt: string) => void;
+  onViewImages: (paths: string[], initial: number, alt: string) => void;
 }) {
   const date = formatDate(m.occurred_at);
+  const photos = m.image_paths ?? [];
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const total = photos.length;
+  const safeIndex = total > 0 ? carouselIndex % total : 0;
 
   return (
     <div className="relative grid grid-cols-[80px_1fr] gap-4 sm:grid-cols-[150px_1fr] sm:gap-8">
@@ -243,23 +257,107 @@ function ChapterRow({
       </div>
 
       <article className="group relative overflow-hidden rounded-2xl border border-rose-200/60 bg-white/80 shadow-[0_10px_30px_-12px_rgba(180,80,110,0.25)] backdrop-blur-sm transition hover:shadow-[0_20px_40px_-15px_rgba(180,80,110,0.35)]">
-        {m.image_path && (
-          <button
-            type="button"
-            onClick={() =>
-              onViewImage(imageUrl(m.image_path!), m.title ?? "A chapter")
-            }
-            className="block aspect-[16/9] w-full cursor-zoom-in overflow-hidden bg-rose-50"
-            aria-label="View photo"
-          >
+        {total > 0 && (
+          <div className="relative aspect-[4/3] w-full overflow-hidden bg-rose-50">
+            {/* Soft blurred copy fills the letterbox space with the image's own colors */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={imageUrl(m.image_path)}
-              alt={m.title ?? "A chapter"}
-              className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.02]"
-              loading="lazy"
+              src={imageUrl(photos[safeIndex])}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
             />
-          </button>
+            <button
+              type="button"
+              onClick={() =>
+                onViewImages(photos, safeIndex, m.title ?? "A chapter")
+              }
+              className="relative block h-full w-full cursor-zoom-in"
+              aria-label="View photo"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageUrl(photos[safeIndex])}
+                alt={m.title ?? "A chapter"}
+                className="h-full w-full object-contain transition-transform duration-300 hover:scale-[1.02]"
+                loading="lazy"
+              />
+            </button>
+
+            {total > 1 && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Previous photo"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCarouselIndex((i) => (i - 1 + total) % total);
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 text-[#3a2030] shadow-md transition hover:bg-white"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next photo"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCarouselIndex((i) => (i + 1) % total);
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 text-[#3a2030] shadow-md transition hover:bg-white"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+
+                <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-black/30 px-2 py-1 backdrop-blur-sm">
+                  {photos.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-label={`Show photo ${i + 1}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCarouselIndex(i);
+                      }}
+                      className={`h-1.5 rounded-full transition-all ${
+                        i === safeIndex
+                          ? "w-4 bg-white"
+                          : "w-1.5 bg-white/60 hover:bg-white/80"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <div className="absolute left-3 top-3 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-white backdrop-blur-sm">
+                  {safeIndex + 1} / {total}
+                </div>
+              </>
+            )}
+          </div>
         )}
         <div className="p-5 sm:p-6">
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-rose-500 sm:hidden">
@@ -366,18 +464,30 @@ function ChapterFormModal({
   const [date, setDate] = useState(initialDate);
   const [title, setTitle] = useState(existing?.title ?? "");
   const [note, setNote] = useState(existing?.note ?? "");
-  const [file, setFile] = useState<File | null>(null);
-  const [removeImage, setRemoveImage] = useState(false);
+  const [keptPaths, setKeptPaths] = useState<string[]>(
+    existing?.image_paths ?? [],
+  );
+  const [newFiles, setNewFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isEdit = !!existing;
-  const currentImagePath = existing?.image_path ?? null;
-  const willHaveImage = file !== null || (currentImagePath && !removeImage);
+  const originalPaths = existing?.image_paths ?? [];
+  const photoCount = keptPaths.length + newFiles.length;
+  const willHavePhoto = photoCount > 0;
+  const canAddMore = photoCount < MAX_PHOTOS_PER_CHAPTER;
+
+  const onPickFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(e.target.files ?? []);
+    if (picked.length === 0) return;
+    const remaining = MAX_PHOTOS_PER_CHAPTER - photoCount;
+    setNewFiles((current) => [...current, ...picked.slice(0, remaining)]);
+    e.target.value = "";
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!title.trim() && !note.trim() && !willHaveImage) {
+    if (!title.trim() && !note.trim() && !willHavePhoto) {
       setError("Add a title, a note, or a photo — at least one.");
       return;
     }
@@ -385,32 +495,35 @@ function ChapterFormModal({
     setError(null);
 
     try {
-      let imagePath: string | null = currentImagePath;
-
-      if (removeImage && currentImagePath) {
-        await supabase.storage.from("moments").remove([currentImagePath]);
-        imagePath = null;
+      // Delete photos the user removed (originals not in keptPaths)
+      const removedPaths = originalPaths.filter((p) => !keptPaths.includes(p));
+      if (removedPaths.length > 0) {
+        await supabase.storage.from("moments").remove(removedPaths);
       }
 
-      if (file) {
-        if (currentImagePath && !removeImage) {
-          await supabase.storage.from("moments").remove([currentImagePath]);
-        }
-        const ext = (file.name.split(".").pop() ?? "jpg").toLowerCase();
+      // Upload new files
+      const uploadedPaths: string[] = [];
+      for (const f of newFiles) {
+        const ext = (f.name.split(".").pop() ?? "jpg").toLowerCase();
         const path = `${crypto.randomUUID()}.${ext}`;
         const up = await supabase.storage
           .from("moments")
-          .upload(path, file, { cacheControl: "3600", upsert: false });
+          .upload(path, f, { cacheControl: "3600", upsert: false });
         if (up.error) throw up.error;
-        imagePath = path;
+        uploadedPaths.push(path);
       }
+
+      const finalPaths = [...keptPaths, ...uploadedPaths].slice(
+        0,
+        MAX_PHOTOS_PER_CHAPTER,
+      );
 
       const occurred_at = new Date(`${date}T12:00:00`).toISOString();
       const payload = {
         occurred_at,
         title: title.trim() || null,
         note: note.trim() || null,
-        image_path: imagePath,
+        image_paths: finalPaths,
       };
 
       if (isEdit && existing) {
@@ -426,8 +539,7 @@ function ChapterFormModal({
 
       onSaved();
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message);
+      setError(extractErrorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -488,48 +600,103 @@ function ChapterFormModal({
                 className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm leading-relaxed text-[#3a2030] focus:border-rose-400 focus:outline-none"
               />
             </Field>
-            <Field label={isEdit ? "Photo" : "Photo (optional)"}>
-              {currentImagePath && !removeImage && !file && (
-                <div className="mb-2 flex items-center gap-3 rounded-xl border border-rose-100 bg-rose-50/50 p-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={imageUrl(currentImagePath)}
-                    alt="current"
-                    className="h-12 w-12 rounded-lg object-cover"
-                  />
-                  <span className="flex-1 text-xs text-[#7a5560]">
-                    Current photo
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setRemoveImage(true)}
-                    className="text-xs text-rose-600 hover:underline"
-                  >
-                    Remove
-                  </button>
+            <Field
+              label={`Photos (up to ${MAX_PHOTOS_PER_CHAPTER}) · ${photoCount}/${MAX_PHOTOS_PER_CHAPTER}`}
+            >
+              {(keptPaths.length > 0 || newFiles.length > 0) && (
+                <div className="mb-2 grid grid-cols-3 gap-2">
+                  {keptPaths.map((path) => (
+                    <div
+                      key={path}
+                      className="group relative aspect-square overflow-hidden rounded-xl border border-rose-200 bg-rose-50"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imageUrl(path)}
+                        alt="existing"
+                        className="h-full w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setKeptPaths((p) => p.filter((x) => x !== path))
+                        }
+                        className="absolute right-1 top-1 rounded-full bg-white/95 p-1 text-rose-600 opacity-90 shadow-md transition hover:opacity-100"
+                        aria-label="Remove photo"
+                        title="Remove"
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden
+                        >
+                          <path d="M18 6L6 18" />
+                          <path d="M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  {newFiles.map((f, idx) => (
+                    <div
+                      key={`${f.name}-${idx}`}
+                      className="group relative aspect-square overflow-hidden rounded-xl border-2 border-dashed border-rose-300 bg-rose-50"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt={f.name}
+                        className="h-full w-full object-cover"
+                      />
+                      <span className="absolute bottom-1 left-1 rounded bg-white/85 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-rose-700">
+                        new
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setNewFiles((arr) =>
+                            arr.filter((_, i) => i !== idx),
+                          )
+                        }
+                        className="absolute right-1 top-1 rounded-full bg-white/95 p-1 text-rose-600 opacity-90 shadow-md transition hover:opacity-100"
+                        aria-label="Remove pending photo"
+                        title="Remove"
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden
+                        >
+                          <path d="M18 6L6 18" />
+                          <path d="M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
-              {removeImage && currentImagePath && !file && (
-                <p className="mb-2 text-xs italic text-[#9a7080]">
-                  Photo will be removed on save.{" "}
-                  <button
-                    type="button"
-                    onClick={() => setRemoveImage(false)}
-                    className="text-rose-600 hover:underline"
-                  >
-                    Keep it
-                  </button>
-                </p>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                className="block w-full text-sm text-[#5a3a4a] file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-rose-100 file:px-4 file:py-1.5 file:text-rose-700 hover:file:bg-rose-200"
-              />
-              {file && (
-                <p className="mt-1 truncate text-xs text-[#7a5560]">
-                  New: {file.name}
+              {canAddMore ? (
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={onPickFiles}
+                  className="block w-full text-sm text-[#5a3a4a] file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-rose-100 file:px-4 file:py-1.5 file:text-rose-700 hover:file:bg-rose-200"
+                />
+              ) : (
+                <p className="text-xs italic text-[#9a7080]">
+                  Limit reached. Remove a photo to add a different one.
                 </p>
               )}
             </Field>
@@ -568,6 +735,25 @@ function ChapterFormModal({
   );
 }
 
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  if (err && typeof err === "object") {
+    const obj = err as Record<string, unknown>;
+    if (typeof obj.message === "string") return obj.message;
+    if (typeof obj.error === "string") return obj.error;
+    if (typeof obj.error_description === "string") {
+      return obj.error_description;
+    }
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return "Unknown error";
+    }
+  }
+  return String(err ?? "Unknown error");
+}
+
 function Field({
   label,
   children,
@@ -586,17 +772,25 @@ function Field({
 }
 
 function Lightbox({
-  src,
+  paths,
+  initialIndex,
   alt,
   onClose,
 }: {
-  src: string;
+  paths: string[];
+  initialIndex: number;
   alt: string;
   onClose: () => void;
 }) {
+  const [index, setIndex] = useState(initialIndex);
+  const total = paths.length;
+  const safeIndex = total > 0 ? ((index % total) + total) % total : 0;
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowLeft") setIndex((i) => i - 1);
+      else if (e.key === "ArrowRight") setIndex((i) => i + 1);
     };
     document.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
@@ -606,6 +800,8 @@ function Lightbox({
       document.body.style.overflow = prevOverflow;
     };
   }, [onClose]);
+
+  if (total === 0) return null;
 
   return (
     <div
@@ -634,16 +830,90 @@ function Lightbox({
         </svg>
       </button>
 
+      {total > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="Previous photo"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIndex((i) => i - 1);
+            }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white shadow-md transition hover:bg-white/20"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Next photo"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIndex((i) => i + 1);
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white shadow-md transition hover:bg-white/20"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </>
+      )}
+
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={src}
+        src={imageUrl(paths[safeIndex])}
         alt={alt}
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[92vh] max-w-[92vw] cursor-default rounded-lg object-contain shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]"
+        className="max-h-[88vh] max-w-[88vw] cursor-default rounded-lg object-contain shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]"
       />
 
+      {total > 1 && (
+        <div className="absolute bottom-16 left-1/2 flex -translate-x-1/2 gap-2 rounded-full bg-white/10 px-3 py-2 backdrop-blur-sm">
+          {paths.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Show photo ${i + 1}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIndex(i);
+              }}
+              className={`h-2 rounded-full transition-all ${
+                i === safeIndex
+                  ? "w-6 bg-white"
+                  : "w-2 bg-white/50 hover:bg-white/80"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
       <p className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm">
-        Esc or click outside to close
+        {total > 1
+          ? `${safeIndex + 1} of ${total} · ← → to navigate · Esc to close`
+          : "Esc or click outside to close"}
       </p>
     </div>
   );

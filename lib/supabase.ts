@@ -16,9 +16,11 @@ export type Moment = {
   occurred_at: string;
   title: string | null;
   note: string | null;
-  image_path: string | null;
+  image_paths: string[];
   created_at: string;
 };
+
+export const MAX_PHOTOS_PER_CHAPTER = 3;
 
 export function imageUrl(path: string): string {
   const { data } = supabase.storage.from("moments").getPublicUrl(path);

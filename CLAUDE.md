@@ -38,7 +38,7 @@ A personal countdown UI for Punith Raj's engagement and wedding to Pallavi, with
 ## Supabase setup
 
 - **Project URL:** `https://ielwyzeuupueysbjvlse.supabase.co` (also in `.env.local`)
-- **Table:** `public.moments` — `id uuid`, `occurred_at timestamptz`, `title text`, `note text`, `image_path text`, `created_at timestamptz`
+- **Table:** `public.moments` — `id uuid`, `occurred_at timestamptz`, `title text`, `note text`, `image_paths text[]` (up to 3 photos per chapter, see `MAX_PHOTOS_PER_CHAPTER` in `lib/supabase.ts`), `created_at timestamptz`
 - **Storage bucket:** `moments` (public, so images load via direct URLs)
 - **RLS:** open policies for `anon, authenticated` roles — fine because the repo is private and only Punith uses the publishable key
 - **Migration SQL:** lives in conversation history; if reapplying from scratch, recreate table + bucket + the eight policies (4 on `public.moments`, 4 on `storage.objects` filtered by `bucket_id = 'moments'`)
@@ -92,6 +92,9 @@ The Add/Edit Moment modal uses the canonical scroll-overlay pattern to handle sh
 - Renamed top three-dot timeline section "The Journey" → "Milestones" to free the word "Journey" / "Story" for the lower section
 - Replaced "Moments" grid with a redesigned **"Our Story"** vertical timeline (`components/OurStorySection.tsx`): each entry shows Day N anchored to a connecting rail, sorted ascending so Day 1 reads first; copy throughout shifted from "moment" → "chapter"
 - **Day N semantics: chapter ordinal, not calendar days.** Punith and Pallavi don't meet every day, so `Day N` = the N-th chapter (1, 2, 3, …) when sorted by `occurred_at` ascending. The "Day 1 — where it began" anchor at the top of Our Story now derives its date from the *first chapter's* `occurred_at` rather than a hardcoded constant; `lib/config.ts` was deleted accordingly. **Don't reintroduce a calendar-day computation.**
+- Reversed Our Story order to newest-first (the Day badge formula is `moments.length - index` so Day 1 still points to the original first meet, but the latest reads at the top of the timeline)
+- Added click-to-view photo lightbox in chapter cards: image button opens a fullscreen modal (z-60) with dark backdrop, Esc / outside-click / X to close, body-scroll locked while open
+- Added `/wallpaper` route — a one-screen no-scroll view with just the header, countdown cards, and Milestones, intended to be pointed at by Lively Wallpaper or similar. The home page (`/`) is unchanged for normal browser viewing.
 
 ## Update protocol for future sessions
 
