@@ -13,6 +13,7 @@ import {
   MAX_PHOTOS_PER_CHAPTER,
   type Moment,
 } from "@/lib/supabase";
+import { lockBodyScroll, unlockBodyScroll } from "@/lib/scrollLock";
 
 const UNLOCK_KEY = "moments_unlocked";
 
@@ -782,16 +783,16 @@ function ChapterDetailModal({
   const safeIndex = total > 0 ? carouselIndex % total : 0;
 
   useEffect(() => {
+    lockBodyScroll();
+    return unlockBodyScroll;
+  }, []);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
+    return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
   if (typeof document === "undefined") return null;
@@ -1002,18 +1003,18 @@ function Lightbox({
   const safeIndex = total > 0 ? ((index % total) + total) % total : 0;
 
   useEffect(() => {
+    lockBodyScroll();
+    return unlockBodyScroll;
+  }, []);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
       else if (e.key === "ArrowLeft") setIndex((i) => i - 1);
       else if (e.key === "ArrowRight") setIndex((i) => i + 1);
     };
     document.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
-    };
+    return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
   if (total === 0) return null;

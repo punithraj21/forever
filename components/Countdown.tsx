@@ -120,10 +120,11 @@ export default function Countdown({
         ).map(([label, value]) => (
           <div
             key={label}
-            className={`flex flex-col items-center justify-center rounded-2xl border ${styles.tile} px-2 py-4 backdrop-blur-sm sm:px-4 sm:py-6`}
+            className={`flex flex-col items-center justify-center overflow-hidden rounded-2xl border ${styles.tile} px-2 py-4 backdrop-blur-sm sm:px-4 sm:py-6`}
           >
             <span
-              className={`font-serif text-3xl font-semibold tabular-nums sm:text-5xl ${styles.digit}`}
+              key={value ?? "loading"}
+              className={`animate-tick font-serif text-3xl font-semibold tabular-nums sm:text-5xl ${styles.digit}`}
             >
               {value === undefined ? "--" : label === "Days" ? value : pad(value)}
             </span>
