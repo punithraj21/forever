@@ -53,7 +53,13 @@ function computeStats(now: Date): Stats {
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
-export default function Journey() {
+export default function Journey({
+  milestonesOnly = false,
+  compact = false,
+}: {
+  milestonesOnly?: boolean;
+  compact?: boolean;
+} = {}) {
   const [s, setS] = useState<Stats | null>(null);
 
   useEffect(() => {
@@ -64,9 +70,15 @@ export default function Journey() {
   }, []);
 
   return (
-    <div className="w-full space-y-14 sm:space-y-20">
+    <div
+      className={`w-full ${milestonesOnly ? "" : "space-y-14 sm:space-y-20"}`}
+    >
       <section className="fade-in">
-        <h3 className="mb-10 text-center font-serif text-3xl font-light tracking-tight text-[#3a2030] sm:text-4xl">
+        <h3
+          className={`text-center font-serif font-light tracking-tight text-[#3a2030] ${
+            compact ? "mb-6 text-2xl sm:text-3xl" : "mb-10 text-3xl sm:text-4xl"
+          }`}
+        >
           Milestones
         </h3>
         <div className="relative px-2 sm:px-6">
@@ -94,33 +106,35 @@ export default function Journey() {
         </div>
       </section>
 
-      <section className="fade-in">
-        <h3 className="mb-10 text-center font-serif text-3xl font-light tracking-tight text-[#3a2030] sm:text-4xl">
-          By the Numbers
-        </h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          <StatTile
-            label="Weeks to engagement"
-            value={s?.weeksToEngagement}
-            tone="amber"
-          />
-          <StatTile
-            label="Days as fiancés"
-            value={s?.engagedDays}
-            tone="rose"
-          />
-          <StatTile
-            label="Months to wedding"
-            value={s?.monthsToWedding}
-            tone="rose"
-          />
-          <StatTile
-            label="Hours to 'I do'"
-            value={s?.hoursToWedding}
-            tone="rose"
-          />
-        </div>
-      </section>
+      {!milestonesOnly && (
+        <section className="fade-in">
+          <h3 className="mb-10 text-center font-serif text-3xl font-light tracking-tight text-[#3a2030] sm:text-4xl">
+            By the Numbers
+          </h3>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            <StatTile
+              label="Weeks to engagement"
+              value={s?.weeksToEngagement}
+              tone="amber"
+            />
+            <StatTile
+              label="Days as fiancés"
+              value={s?.engagedDays}
+              tone="rose"
+            />
+            <StatTile
+              label="Months to wedding"
+              value={s?.monthsToWedding}
+              tone="rose"
+            />
+            <StatTile
+              label="Hours to 'I do'"
+              value={s?.hoursToWedding}
+              tone="rose"
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

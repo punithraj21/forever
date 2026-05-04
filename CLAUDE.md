@@ -17,19 +17,21 @@ A personal countdown UI for Punith Raj's engagement and wedding to Pallavi, with
 
 ## Routes
 
-| Path       | Purpose                                                                |
-| ---------- | ---------------------------------------------------------------------- |
-| `/`        | Main countdown page (header, cards, journey, moments, quote, footer)   |
-| `/unlock`  | Secret-key gate — sets `localStorage.moments_unlocked` when secret matches |
+| Path         | Purpose                                                                                  |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| `/`          | Main page (header, cards, Milestones, By the Numbers, Our Story, quote, footer)         |
+| `/unlock`    | Secret-key gate — sets `localStorage.moments_unlocked` when secret matches               |
+| `/wallpaper` | One-screen view for desktop wallpaper (header + cards + Milestones only). No scrollbar. |
 
 ## File layout
 
 - `app/page.tsx` — composes the home page (header → countdown cards → Milestones → Our Story → quote → footer)
 - `app/unlock/page.tsx` — unlock form
+- `app/wallpaper/page.tsx` — wallpaper-only view: header + cards + Milestones; sets `html/body { overflow: hidden }` on mount and restores on unmount; uses `fixed inset-0` to clip overflow
 - `app/layout.tsx` — root layout, metadata
 - `app/globals.css` — Tailwind directives + Cormorant Garamond / Inter fonts (Google Fonts `@import` MUST come before the `@tailwind` directives — Turbopack enforces strict CSS ordering)
 - `components/Countdown.tsx` — live ticker per event (days/hours/minutes/seconds), updates every second
-- `components/Journey.tsx` — **Milestones** section: three-node horizontal timeline (Today / Engagement / Wedding) + four "By the Numbers" stat tiles, updates every minute. (File still named `Journey.tsx` even though the user-facing heading is "Milestones".)
+- `components/Journey.tsx` — **Milestones** section: three-node horizontal timeline (Today / Engagement / Wedding) + four "By the Numbers" stat tiles, updates every minute. (File still named `Journey.tsx` even though the user-facing heading is "Milestones".) Accepts `milestonesOnly?: boolean` to hide the stat tiles and `compact?: boolean` to shrink the heading — both used by `/wallpaper`.
 - `components/OurStorySection.tsx` — **Our Story** section: vertical chronological timeline of chapters, each with a Day N badge anchored to a connecting rail. Includes unified Add/Edit modal + delete; reads unlock flag from localStorage to gate mutate UI. Fetches with `order(occurred_at, asc)` so Day 1 is first.
 - `lib/supabase.ts` — Supabase client singleton, `Moment` type, `imageUrl()` helper
 
