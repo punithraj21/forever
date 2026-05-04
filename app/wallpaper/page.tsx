@@ -19,7 +19,7 @@ export default function WallpaperPage() {
   }, []);
 
   return (
-    <main className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden px-6 py-6 sm:px-10 sm:py-8">
+    <main className="fixed inset-0 flex flex-col items-center justify-evenly overflow-hidden px-6 py-10 sm:px-10 sm:py-12">
       <header className="fade-in text-center">
         <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.32em] text-[#a06a7c] sm:text-xs">
           With love
@@ -33,7 +33,7 @@ export default function WallpaperPage() {
         <div className="mx-auto mt-3 h-px w-20 bg-gradient-to-r from-transparent via-rose-300 to-transparent" />
       </header>
 
-      <div className="mt-6 grid w-full max-w-6xl gap-4 sm:gap-6 lg:grid-cols-2">
+      <div className="grid w-full max-w-6xl gap-8 sm:gap-12 lg:gap-16 lg:grid-cols-2">
         <Countdown
           title="Engagement"
           subtitle="The Promise"
@@ -50,7 +50,7 @@ export default function WallpaperPage() {
         />
       </div>
 
-      <div className="mt-6 w-full max-w-5xl">
+      <div className="w-full max-w-5xl">
         <Journey milestonesOnly compact />
       </div>
     </main>
