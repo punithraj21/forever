@@ -19,13 +19,15 @@ A personal countdown UI for Punith Raj's engagement and wedding to Pallavi, with
 
 | Path         | Purpose                                                                                  |
 | ------------ | ---------------------------------------------------------------------------------------- |
-| `/`          | Main page (header, cards, Milestones, By the Numbers, Our Story, quote, footer)         |
+| `/`          | Main page (header, cards, Milestones, By the Numbers, quote, footer). The "Our Story" CTA card is gated behind `SHOW_OUR_STORY_CTA` (currently `false`). |
+| `/moments`   | Dedicated Our Story timeline — full chapter list with add/edit when unlocked. Reachable directly even when the home CTA is hidden. |
 | `/unlock`    | Secret-key gate — sets `localStorage.moments_unlocked` when secret matches               |
 | `/wallpaper` | One-screen view for desktop wallpaper (header + cards + Milestones only). No scrollbar. |
 
 ## File layout
 
-- `app/page.tsx` — composes the home page (header → countdown cards → Milestones → Our Story → quote → footer)
+- `app/page.tsx` — composes the home page (header → countdown cards → Milestones → "Our Story" CTA card linking to `/moments` → quote → footer)
+- `app/moments/page.tsx` — dedicated route for the Our Story timeline; thin wrapper that renders `<OurStorySection />` with a "← Back to countdown" link and a footer
 - `app/unlock/page.tsx` — unlock form
 - `app/wallpaper/page.tsx` — wallpaper-only view: header + cards + Milestones; sets `html/body { overflow: hidden }` on mount and restores on unmount; uses `fixed inset-0` to clip overflow
 - `app/layout.tsx` — root layout, metadata
@@ -112,6 +114,7 @@ The form modal also uses the scroll-overlay pattern for short viewports:
 - **Body-scroll-lock helper** (`lib/scrollLock.ts`): both the photo lightbox and the chapter detail modal previously locked body scroll via `document.body.style.overflow = "hidden"` with `[onClose]` deps. `onClose` is an inline arrow at the call site, so it changed every parent render — the effect re-ran, restoring `prevOverflow` to whatever was current (often `"hidden"` from another modal still open), and the final unmount left scrolling permanently locked on mobile. Replaced with a refcounted `lockBodyScroll()` / `unlockBodyScroll()` pair: only the first lock captures the original overflow, only the last unlock restores it. Body-lock effects now use `[]` deps. **Don't fold the lock back into the keydown effect** — the `[onClose]` dep on the keydown side is fine, but the body lock must be on a separate, dep-less effect.
 - Added `/wallpaper` route — a one-screen no-scroll view with just the header, countdown cards, and Milestones, intended to be pointed at by Lively Wallpaper or similar. The home page (`/`) is unchanged for normal browser viewing.
 - Added an **Our Story sort toggle** (pill button above the timeline) that flips between "Oldest first" (default) and "Newest first". Reverses the rendered list but keeps Day N pinned to chronological order — `displayMoments = sortOrder === "newest" ? [...moments].reverse() : moments`, and `day = sortOrder === "newest" ? chapterCount - i : i + 1`. The "…to be continued" tail is hidden in newest-first mode. The toggle only appears when `chapterCount >= 2`.
+- **Moved Our Story to its own `/moments` route.** Removed the inline timeline from the home page and added a compact "Our Story" CTA card (rose/pink gradient, "Open our story →") that links to `/moments` — a thin page wrapping `<OurStorySection />` with a "← Back to countdown" link. The CTA card is currently gated behind a top-level `SHOW_OUR_STORY_CTA = false` flag in `app/page.tsx` (Punith asked to hide it until ready); flip the flag to `true` to surface it again. The `/moments` route stays reachable either way. Also bumped the wedding `targetISO` to `2026-12-14T12:25:00` (was midnight).
 
 ## Update protocol for future sessions
 

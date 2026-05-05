@@ -1,6 +1,10 @@
+import Link from "next/link";
 import Countdown from "@/components/Countdown";
 import Journey from "@/components/Journey";
-import OurStorySection from "@/components/OurStorySection";
+
+// Toggle the home-page "Our Story" CTA card. Hidden until Punith asks to surface it.
+// The /moments route stays live regardless — flip this to `true` to re-show the card.
+const SHOW_OUR_STORY_CTA = false;
 
 export default function Home() {
   return (
@@ -39,9 +43,27 @@ export default function Home() {
         <Journey />
       </div>
 
-      <div className="mt-16 w-full sm:mt-24">
-        <OurStorySection />
-      </div>
+      {SHOW_OUR_STORY_CTA && (
+        <div className="mt-16 w-full sm:mt-24">
+          <Link
+            href="/moments"
+            className="fade-in group mx-auto flex max-w-md flex-col items-center gap-3 rounded-3xl border border-rose-200/70 bg-gradient-to-br from-rose-50/80 to-pink-100/60 p-10 text-center shadow-[0_20px_60px_-15px_rgba(180,80,110,0.25)] backdrop-blur-sm transition hover:shadow-[0_30px_70px_-15px_rgba(180,80,110,0.35)]"
+          >
+            <p className="text-xs font-medium uppercase tracking-[0.32em] text-[#a06a7c]">
+              chapter by chapter
+            </p>
+            <h3 className="font-serif text-3xl font-light tracking-tight text-[#3a2030] sm:text-4xl">
+              Our Story
+            </h3>
+            <p className="font-serif text-base italic text-[#7a5560]">
+              Read every chapter, from the day we met.
+            </p>
+            <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.22em] text-rose-600 transition-all group-hover:gap-3">
+              Open our story <span aria-hidden>→</span>
+            </span>
+          </Link>
+        </div>
+      )}
 
       <section className="fade-in mt-16 max-w-2xl text-center sm:mt-24">
         <p className="font-serif text-xl italic leading-relaxed text-[#5a3a4a] sm:text-2xl">

@@ -189,8 +189,7 @@ export default function OurStorySection() {
 
           <div className="space-y-10">
             {displayMoments.map((m, i) => {
-              const day =
-                sortOrder === "newest" ? chapterCount - i : i + 1;
+              const day = sortOrder === "newest" ? chapterCount - i : i + 1;
               return (
                 <ChapterRow
                   key={m.id}
@@ -411,7 +410,7 @@ function ChapterRow({
           className="block w-full cursor-pointer p-5 text-left transition hover:bg-rose-50/40 sm:p-6"
         >
           <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-rose-500 sm:hidden">
-            Day {day} · {date}
+            {date}
           </div>
           {m.title && (
             <h4 className="mt-1 font-serif text-2xl font-medium leading-tight text-[#3a2030] sm:mt-0">
