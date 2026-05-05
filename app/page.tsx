@@ -29,7 +29,7 @@ export default function Home() {
         <Countdown
           title="Wedding Day"
           subtitle="The Forever"
-          targetISO="2026-12-14T00:00:00"
+          targetISO="2026-12-14T12:25:00"
           accent="rose"
           emoji="❀"
         />

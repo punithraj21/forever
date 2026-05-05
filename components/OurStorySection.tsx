@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  type FormEvent,
-  type MouseEvent,
-} from "react";
+import { useEffect, useState, type FormEvent, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import {
   supabase,
@@ -44,9 +39,7 @@ export default function OurStorySection() {
     initial: number;
     alt: string;
   } | null>(null);
-  const [detail, setDetail] = useState<{ m: Moment; day: number } | null>(
-    null,
-  );
+  const [detail, setDetail] = useState<{ m: Moment; day: number } | null>(null);
 
   const refresh = async () => {
     const { data, error } = await supabase
@@ -114,7 +107,7 @@ export default function OurStorySection() {
       )}
 
       <div className="mt-10 flex justify-center">
-        {unlocked ? (
+        {unlocked && (
           <button
             onClick={() => setEditing("new")}
             type="button"
@@ -122,13 +115,6 @@ export default function OurStorySection() {
           >
             + Add a chapter
           </button>
-        ) : (
-          <a
-            href="/unlock"
-            className="text-xs uppercase tracking-[0.18em] text-[#9a7080] underline-offset-4 hover:text-rose-700 hover:underline"
-          >
-            unlock to add a chapter
-          </a>
         )}
       </div>
 
@@ -270,7 +256,7 @@ function ChapterRow({
           {day}
         </div>
         <div className="mt-2 hidden text-center text-[11px] font-medium uppercase tracking-[0.14em] text-rose-500 sm:block">
-          Day {day}
+          Event {day}
         </div>
         <div className="mt-1 hidden text-center text-[10px] text-[#7a5560] sm:block">
           {date}
@@ -689,9 +675,7 @@ function ChapterFormModal({
                       <button
                         type="button"
                         onClick={() =>
-                          setNewFiles((arr) =>
-                            arr.filter((_, i) => i !== idx),
-                          )
+                          setNewFiles((arr) => arr.filter((_, i) => i !== idx))
                         }
                         className="absolute right-1 top-1 rounded-full bg-white/95 p-1 text-rose-600 opacity-90 shadow-md transition hover:opacity-100"
                         aria-label="Remove pending photo"
@@ -752,11 +736,7 @@ function ChapterFormModal({
               disabled={saving}
               className="rounded-full bg-rose-500 px-5 py-2 text-sm font-medium text-white shadow-md transition hover:bg-rose-600 disabled:opacity-60"
             >
-              {saving
-                ? "Saving…"
-                : isEdit
-                  ? "Save changes"
-                  : "Save chapter"}
+              {saving ? "Saving…" : isEdit ? "Save changes" : "Save chapter"}
             </button>
           </div>
         </form>
@@ -1021,10 +1001,7 @@ function Lightbox({
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[60] bg-black"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-[60] bg-black" onClick={onClose}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={imageUrl(paths[safeIndex])}
