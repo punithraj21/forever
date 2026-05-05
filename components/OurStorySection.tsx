@@ -29,11 +29,14 @@ function formatShortDate(iso: string | Date): string {
   });
 }
 
+type SortOrder = "oldest" | "newest";
+
 export default function OurStorySection() {
   const [moments, setMoments] = useState<Moment[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const [editing, setEditing] = useState<Moment | "new" | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>("oldest");
   const [lightbox, setLightbox] = useState<{
     paths: string[];
     initial: number;
@@ -76,6 +79,9 @@ export default function OurStorySection() {
   const chapterCount = moments?.length ?? 0;
   // Query is ascending (Day 1 first), so the first chapter sets the "where it began" anchor.
   const firstMoment = moments && moments.length > 0 ? moments[0] : null;
+  // Display order can flip via the sort toggle, but Day N stays tied to chronological ordinal.
+  const displayMoments =
+    moments && sortOrder === "newest" ? [...moments].reverse() : moments;
 
   return (
     <section className="fade-in w-full">
@@ -106,7 +112,37 @@ export default function OurStorySection() {
         </div>
       )}
 
-      <div className="mt-10 flex justify-center">
+      <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+        {chapterCount >= 2 && (
+          <button
+            type="button"
+            onClick={() =>
+              setSortOrder((s) => (s === "oldest" ? "newest" : "oldest"))
+            }
+            aria-label={`Sort: showing ${
+              sortOrder === "oldest" ? "oldest first" : "newest first"
+            } — click to flip`}
+            className="inline-flex items-center gap-2 rounded-full border border-rose-300 bg-white/70 px-5 py-2.5 text-sm font-medium text-rose-700 shadow-sm backdrop-blur-sm transition hover:bg-rose-100/80"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="m3 8 4-4 4 4" />
+              <path d="M7 4v16" />
+              <path d="m21 16-4 4-4-4" />
+              <path d="M17 20V4" />
+            </svg>
+            {sortOrder === "oldest" ? "Oldest first" : "Newest first"}
+          </button>
+        )}
         {unlocked && (
           <button
             onClick={() => setEditing("new")}
@@ -144,7 +180,7 @@ export default function OurStorySection() {
         </div>
       )}
 
-      {moments && moments.length > 0 && (
+      {displayMoments && displayMoments.length > 0 && (
         <div className="relative mt-14">
           <div
             className="pointer-events-none absolute bottom-0 left-[42px] top-0 w-px bg-gradient-to-b from-rose-300 via-rose-200 to-transparent sm:left-[78px]"
@@ -152,8 +188,9 @@ export default function OurStorySection() {
           />
 
           <div className="space-y-10">
-            {moments.map((m, index) => {
-              const day = index + 1;
+            {displayMoments.map((m, i) => {
+              const day =
+                sortOrder === "newest" ? chapterCount - i : i + 1;
               return (
                 <ChapterRow
                   key={m.id}
@@ -171,12 +208,14 @@ export default function OurStorySection() {
             })}
           </div>
 
-          <div className="mt-10 flex flex-col items-center gap-3">
-            <div className="h-10 w-px bg-gradient-to-b from-rose-200 to-transparent" />
-            <p className="font-serif text-sm italic text-[#9a7080]">
-              …to be continued
-            </p>
-          </div>
+          {sortOrder === "oldest" && (
+            <div className="mt-10 flex flex-col items-center gap-3">
+              <div className="h-10 w-px bg-gradient-to-b from-rose-200 to-transparent" />
+              <p className="font-serif text-sm italic text-[#9a7080]">
+                …to be continued
+              </p>
+            </div>
+          )}
         </div>
       )}
 
