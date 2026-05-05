@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 import Countdown from "@/components/Countdown";
 import Journey from "@/components/Journey";
@@ -55,6 +56,14 @@ export default function WallpaperPage() {
       <div className="w-full max-w-5xl">
         <Journey milestonesOnly compact />
       </div>
+
+      <Link
+        href="/wallpaper-two"
+        title="Switch to flip-card theme"
+        className="fixed bottom-4 right-4 z-20 flex items-center gap-2 rounded-full bg-[#3a2030]/85 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/95 backdrop-blur-md transition hover:bg-[#3a2030] sm:text-xs"
+      >
+        <span aria-hidden>↺</span> Flip theme
+      </Link>
     </main>
   );
 }
