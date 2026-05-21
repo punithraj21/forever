@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 
-const IMAGE_URL = "/share/engagement/og";
+// Bump the version when the OG design changes so browsers and CDNs fetch a fresh PNG.
+const IMAGE_URL = "/share/engagement/og?v=2";
 const VENUE_URL = "https://maps.app.goo.gl/bN6oeNQNvGHJVkiX7";
 const VENUE_NAME = "Manjunath Grand";
 const SHARE_TEXT =

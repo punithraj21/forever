@@ -257,10 +257,11 @@ export async function GET() {
         { name: "Inter", data: inter500, weight: 500, style: "normal" },
       ],
       headers: {
-        // Short browser cache + longer CDN cache; lets design tweaks propagate
-        // after redeploys without forcing a manual cache bust.
+        // Tiny browser cache so design tweaks land on next refresh; CDN keeps
+        // a long cache for performance. Bump the ?v= on the page when the
+        // design changes to force a fresh CDN entry without waiting.
         "Cache-Control":
-          "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+          "public, max-age=60, s-maxage=86400, stale-while-revalidate=604800",
       },
     },
   );
