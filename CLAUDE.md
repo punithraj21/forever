@@ -5,7 +5,7 @@ A personal countdown UI for Punith Raj's engagement and wedding to Pallavi, with
 ## Key dates
 
 - **Engagement:** June 21, 2026
-- **Wedding:** December 14, 2026
+- **Wedding:** February 11, 2027 (11:30 AM) — postponed from December 14, 2026
 
 ## Tech stack
 
@@ -115,6 +115,7 @@ The form modal also uses the scroll-overlay pattern for short viewports:
 - Added `/wallpaper` route — a one-screen no-scroll view with just the header, countdown cards, and Milestones, intended to be pointed at by Lively Wallpaper or similar. The home page (`/`) is unchanged for normal browser viewing.
 - Added an **Our Story sort toggle** (pill button above the timeline) that flips between "Oldest first" (default) and "Newest first". Reverses the rendered list but keeps Day N pinned to chronological order — `displayMoments = sortOrder === "newest" ? [...moments].reverse() : moments`, and `day = sortOrder === "newest" ? chapterCount - i : i + 1`. The "…to be continued" tail is hidden in newest-first mode. The toggle only appears when `chapterCount >= 2`.
 - **Moved Our Story to its own `/moments` route.** Removed the inline timeline from the home page and added a compact "Our Story" CTA card (rose/pink gradient, "Open our story →") that links to `/moments` — a thin page wrapping `<OurStorySection />` with a "← Back to countdown" link. The CTA card is currently gated behind a top-level `SHOW_OUR_STORY_CTA = false` flag in `app/page.tsx` (Punith asked to hide it until ready); flip the flag to `true` to surface it again. The `/moments` route stays reachable either way. Also bumped the wedding `targetISO` to `2026-12-14T12:25:00` (was midnight).
+- **Wedding postponed to Feb 11, 2027 at 11:30 AM** (was Dec 14, 2026). Updated `WEDDING` constant + fallback display in `components/Journey.tsx`, and `targetISO` / `target` props in `app/page.tsx`, `app/wallpaper/page.tsx`, and `app/wallpaper-two/page.tsx`. ISO used: `2027-02-11T11:30:00` (local time, matches the existing convention — no `Z` suffix). The chronological reorder in `Journey.buildMilestoneList` and the post-engagement phase logic both still hold because Engagement (Jun 21, 2026) still precedes Wedding.
 
 ## Update protocol for future sessions
 

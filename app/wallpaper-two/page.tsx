@@ -347,7 +347,7 @@ export default function WallpaperTwoPage() {
           />
           <CountdownPanel
             eyebrow="Wedding"
-            target={new Date("2026-12-14T12:25:00")}
+            target={new Date("2027-02-11T11:30:00")}
           />
         </div>
 

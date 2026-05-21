@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 const ENGAGEMENT = new Date("2026-06-21T00:00:00");
-const WEDDING = new Date("2026-12-14T00:00:00");
+const WEDDING = new Date("2027-02-11T11:30:00");
 const DAY_MS = 1000 * 60 * 60 * 24;
 const HOUR_MS = 1000 * 60 * 60;
 
@@ -103,7 +103,7 @@ function buildMilestoneList(now: Date, s: Stats): MilestoneItem[] {
   const wedding: MilestoneItem = {
     key: "wedding",
     title: "Wedding",
-    date: "Dec 14, 2026",
+    date: "Feb 11, 2027",
     state: s.postWedding ? "past" : "future",
     dotClass: s.postWedding ? "bg-rose-300" : "bg-rose-500",
     distance: s.postWedding
@@ -176,7 +176,7 @@ export default function Journey({
                   {
                     key: "wedding" as const,
                     title: "Wedding",
-                    date: "Dec 14, 2026",
+                    date: "Feb 11, 2027",
                     distance: "—",
                     state: "future" as const,
                     dotClass: "bg-rose-500",

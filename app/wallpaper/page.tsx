@@ -46,7 +46,7 @@ export default function WallpaperPage() {
         <Countdown
           title="Wedding Day"
           subtitle="The Forever"
-          targetISO="2026-12-14T12:25:00"
+          targetISO="2027-02-11T11:30:00"
           accent="rose"
           emoji="❀"
           passedVerb="Married"
