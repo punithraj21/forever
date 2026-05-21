@@ -14,17 +14,17 @@ export default function EngagementShareClient() {
   const [status, setStatus] = useState<string | null>(null);
 
   async function copyImage() {
-    setStatus("Copying…");
+    setStatus("One moment…");
     try {
       const res = await fetch(IMAGE_URL);
       const blob = await res.blob();
       await navigator.clipboard.write([
         new ClipboardItem({ [blob.type || "image/png"]: blob }),
       ]);
-      setStatus("Copied to clipboard ✓");
+      setStatus("Ready to paste ✓");
     } catch (err) {
       console.error(err);
-      setStatus("Copy failed — try Download instead");
+      setStatus("Couldn't copy — try saving the card instead");
     }
     setTimeout(() => setStatus(null), 2400);
   }
@@ -54,7 +54,7 @@ export default function EngagementShareClient() {
       );
     } catch (err) {
       console.error(err);
-      setStatus("Share failed — try Download instead");
+      setStatus("Couldn't send — try saving the card instead");
       setTimeout(() => setStatus(null), 2400);
     }
   }
@@ -75,10 +75,10 @@ export default function EngagementShareClient() {
           Save the date
         </p>
         <h1 className="font-serif text-4xl font-light tracking-tight text-[#3a2030] sm:text-5xl">
-          Engagement Share Card
+          Our invitation
         </h1>
         <p className="mx-auto mt-3 max-w-md font-serif text-base italic text-[#7a5560]">
-          A 1080×1350 PNG, ready for WhatsApp or Instagram.
+          Keep it close — and pass it on to anyone who&apos;d love to know.
         </p>
         <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-rose-300 to-transparent" />
       </header>
@@ -100,7 +100,7 @@ export default function EngagementShareClient() {
           download="engagement-save-the-date.png"
           className="inline-flex items-center justify-center gap-2 rounded-full bg-[#3a2030] px-6 py-3.5 text-sm font-medium tracking-wide text-white shadow-[0_10px_30px_-10px_rgba(58,32,48,0.4)] transition-transform hover:-translate-y-0.5"
         >
-          <span aria-hidden>↓</span> Download PNG
+          <span aria-hidden>↓</span> Keep a copy
         </a>
 
         <div className="grid grid-cols-2 gap-3">
@@ -108,13 +108,13 @@ export default function EngagementShareClient() {
             onClick={copyImage}
             className="inline-flex items-center justify-center gap-2 rounded-full border border-rose-200 bg-white/70 px-4 py-3 text-sm font-medium tracking-wide text-[#5a3a4a] transition-colors hover:bg-rose-50"
           >
-            <span aria-hidden>⧉</span> Copy image
+            <span aria-hidden>⧉</span> Copy to send
           </button>
           <button
             onClick={shareNative}
             className="inline-flex items-center justify-center gap-2 rounded-full border border-rose-200 bg-white/70 px-4 py-3 text-sm font-medium tracking-wide text-[#5a3a4a] transition-colors hover:bg-rose-50"
           >
-            <span aria-hidden>↗</span> Share…
+            <span aria-hidden>↗</span> Pass it on
           </button>
         </div>
 
@@ -124,7 +124,7 @@ export default function EngagementShareClient() {
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-2 rounded-full border border-amber-200 bg-amber-50/60 px-4 py-3 text-sm font-medium tracking-wide text-[#7a4a3a] transition-colors hover:bg-amber-50"
         >
-          <span aria-hidden>◉</span> Open {VENUE_NAME} in Maps
+          <span aria-hidden>◉</span> Find the venue
         </a>
 
         {status && (
