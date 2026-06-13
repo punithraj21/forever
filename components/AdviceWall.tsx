@@ -1,13 +1,17 @@
 "use client";
 
 // "Advice for the Couple" — a guest-submitted advice/blessing wall, backed by
-// Supabase (table: public.advice). Open to everyone for read + insert; delete is
-// gated behind the same localStorage "moments_unlocked" flag as the Moments UI,
-// so Punith can prune spam.
+// Supabase (table: public.advice). Anyone may SUBMIT a blessing, but the wall of
+// submitted blessings is only DISPLAYED to the unlocked user (localStorage
+// "moments_unlocked" === "true", same flag as the Moments UI) — guests just get a
+// thank-you after posting. Delete is likewise unlock-gated, so Punith can prune.
 //
-// Requires the `advice` table + RLS policies (see migration handed over at build
-// time). Until it exists, fetch/insert fail gracefully — the wall just shows the
-// empty prompt and submit surfaces the error.
+// Note: DB-level RLS still allows anon select — the unlock check is client-side
+// "friction, not security", consistent with the rest of the app. Real read
+// privacy would require Supabase Auth.
+//
+// Requires the `advice` table + RLS policies (migration: supabase/advice.sql).
+// Until it exists, insert surfaces the error in the form.
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -48,14 +52,17 @@ export default function AdviceWall() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
-    setUnlocked(
+    const isUnlocked =
       typeof window !== "undefined" &&
-        localStorage.getItem("moments_unlocked") === "true",
-    );
-    void fetchAdvice();
+      localStorage.getItem("moments_unlocked") === "true";
+    setUnlocked(isUnlocked);
+    // Only the unlocked user sees the wall, so only they need the list fetched.
+    if (isUnlocked) void fetchAdvice();
+    else setLoading(false);
   }, []);
 
   async function fetchAdvice() {
@@ -89,9 +96,11 @@ export default function AdviceWall() {
     if (error) {
       setSubmitError(extractErrorMessage(error));
     } else if (data) {
-      setItems((prev) => [data as Advice, ...prev]);
+      // Unlocked user sees the wall update live; guests get a thank-you instead.
+      if (unlocked) setItems((prev) => [data as Advice, ...prev]);
       setName("");
       setMessage("");
+      setSubmitted(true);
     }
     setSubmitting(false);
   }
@@ -134,7 +143,10 @@ export default function AdviceWall() {
         <textarea
           id="advice-message"
           value={message}
-          onChange={(e) => setMessage(e.target.value.slice(0, MAX_MESSAGE))}
+          onChange={(e) => {
+            setMessage(e.target.value.slice(0, MAX_MESSAGE));
+            if (submitted) setSubmitted(false);
+          }}
           required
           rows={3}
           placeholder="Share a little wisdom for the journey ahead…"
@@ -164,28 +176,28 @@ export default function AdviceWall() {
         )}
       </form>
 
-      {loading ? (
-        <p className="text-center text-sm italic text-[#7a5560]">
-          Gathering blessings…
-        </p>
-      ) : items.length === 0 ? (
-        <p className="text-center font-serif text-lg italic text-[#7a5560]">
-          No blessings yet — be the first to share one for Punith &amp; Pallavi.
-        </p>
-      ) : (
-        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
-          {items.map((item) => (
-            <figure
-              key={item.id}
-              className="group relative mb-4 break-inside-avoid rounded-2xl border border-rose-100 bg-white/60 p-5 shadow-sm backdrop-blur-sm"
-            >
-              <blockquote className="font-serif text-base italic leading-relaxed text-[#5a3a4a]">
-                &ldquo;{item.message}&rdquo;
-              </blockquote>
-              <figcaption className="mt-3 text-xs uppercase tracking-[0.18em] text-[#9a7080]">
-                — {item.name?.trim() || "A well-wisher"}
-              </figcaption>
-              {unlocked && (
+      {unlocked ? (
+        loading ? (
+          <p className="text-center text-sm italic text-[#7a5560]">
+            Gathering blessings…
+          </p>
+        ) : items.length === 0 ? (
+          <p className="text-center font-serif text-lg italic text-[#7a5560]">
+            No blessings yet — they&rsquo;ll appear here as guests share them.
+          </p>
+        ) : (
+          <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
+            {items.map((item) => (
+              <figure
+                key={item.id}
+                className="group relative mb-4 break-inside-avoid rounded-2xl border border-rose-100 bg-white/60 p-5 shadow-sm backdrop-blur-sm"
+              >
+                <blockquote className="font-serif text-base italic leading-relaxed text-[#5a3a4a]">
+                  &ldquo;{item.message}&rdquo;
+                </blockquote>
+                <figcaption className="mt-3 text-xs uppercase tracking-[0.18em] text-[#9a7080]">
+                  — {item.name?.trim() || "A well-wisher"}
+                </figcaption>
                 <button
                   type="button"
                   onClick={() => handleDelete(item.id)}
@@ -194,11 +206,15 @@ export default function AdviceWall() {
                 >
                   ×
                 </button>
-              )}
-            </figure>
-          ))}
-        </div>
-      )}
+              </figure>
+            ))}
+          </div>
+        )
+      ) : submitted ? (
+        <p className="text-center font-serif text-lg italic text-[#5a3a4a]">
+          Thank you — your blessing is on its way to Punith &amp; Pallavi. 💕
+        </p>
+      ) : null}
     </section>
   );
 }
