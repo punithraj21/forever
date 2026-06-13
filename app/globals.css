@@ -38,3 +38,48 @@ body {
   animation: tick 320ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
   display: inline-block;
 }
+
+/* Petal easter egg (PetalEasterEgg.tsx): falling rose petals with a gentle
+   side-to-side sway. Per-petal --drift (px) and --spin (unitless deg) are set
+   inline; left / size / duration / delay are randomized too. */
+@keyframes petal-fall {
+  0% {
+    transform: translate(0, -12vh) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  35% {
+    transform: translate(calc(var(--drift) * 0.5), 28vh)
+      rotate(calc(var(--spin) * 0.4deg));
+  }
+  70% {
+    transform: translate(calc(var(--drift) * -0.35), 68vh)
+      rotate(calc(var(--spin) * 0.75deg));
+  }
+  100% {
+    transform: translate(var(--drift), 114vh) rotate(calc(var(--spin) * 1deg));
+    opacity: 0;
+  }
+}
+
+.petal {
+  position: absolute;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 100% 0 100% 0;
+  background: linear-gradient(135deg, #fbcfe1, #f9a8c4);
+  box-shadow: 0 1px 2px rgba(180, 80, 110, 0.15);
+  will-change: transform, opacity;
+  animation-name: petal-fall;
+  animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  animation-fill-mode: forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .petal {
+    display: none;
+  }
+}

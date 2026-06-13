@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Countdown from "@/components/Countdown";
+import PetalEasterEgg from "@/components/PetalEasterEgg";
 import Journey from "@/components/Journey";
 import EventDetails from "@/components/EventDetails";
 import VenueMap from "@/components/VenueMap";
@@ -17,9 +18,7 @@ export default function Home() {
         <p className="mb-3 text-xs font-medium uppercase tracking-[0.32em] text-[#a06a7c]">
           With love
         </p>
-        <h1 className="font-serif text-5xl font-light tracking-tight text-[#3a2030] sm:text-6xl">
-          Punith <span className="text-rose-400">&</span> Pallavi
-        </h1>
+        <PetalEasterEgg />
         <p className="mx-auto mt-4 max-w-md font-serif text-lg italic text-[#7a5560] sm:text-xl">
           Counting down to forever
         </p>
