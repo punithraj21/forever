@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Countdown from "@/components/Countdown";
 import Journey from "@/components/Journey";
+import EventDetails from "@/components/EventDetails";
 
 // Toggle the home-page "Our Story" CTA card. Hidden until Punith asks to surface it.
 // The /moments route stays live regardless — flip this to `true` to re-show the card.
@@ -41,6 +42,10 @@ export default function Home() {
 
       <div className="mt-16 w-full sm:mt-24">
         <Journey />
+      </div>
+
+      <div className="mt-16 w-full sm:mt-24">
+        <EventDetails />
       </div>
 
       {SHOW_OUR_STORY_CTA && (
