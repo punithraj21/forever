@@ -4,6 +4,7 @@ import PetalEasterEgg from "@/components/PetalEasterEgg";
 import Journey from "@/components/Journey";
 import EventDetails from "@/components/EventDetails";
 import VenueMap from "@/components/VenueMap";
+import VenueDistance from "@/components/VenueDistance";
 import Weather from "@/components/Weather";
 import AdviceWall from "@/components/AdviceWall";
 
@@ -52,6 +53,10 @@ export default function Home() {
 
       <div className="mt-16 w-full sm:mt-24">
         <VenueMap />
+      </div>
+
+      <div className="mt-16 w-full sm:mt-24">
+        <VenueDistance />
       </div>
 
       <div className="mt-16 w-full sm:mt-24">
