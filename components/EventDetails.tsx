@@ -26,7 +26,7 @@ const EVENTS: EventInfo[] = [
     emoji: "✦",
     title: "Engagement",
     date: "Sunday, June 21, 2026",
-    time: "11:30 AM onwards",
+    time: "10:00 AM onwards",
     venue: "Shri Manjunatha Grand Veg",
     mapUrl: "https://maps.app.goo.gl/TjT39YazGP5VF4AaA",
     image: "/venues/engagement.svg",

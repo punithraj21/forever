@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const ENGAGEMENT = new Date("2026-06-21T00:00:00");
+const ENGAGEMENT = new Date("2026-06-21T10:00:00");
 const WEDDING = new Date("2027-02-11T11:30:00");
 const DAY_MS = 1000 * 60 * 60 * 24;
 const HOUR_MS = 1000 * 60 * 60;

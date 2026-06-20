@@ -343,7 +343,7 @@ export default function WallpaperTwoPage() {
         <div className="grid w-full max-w-6xl gap-10 sm:gap-14 lg:grid-cols-2">
           <CountdownPanel
             eyebrow="Engagement"
-            target={new Date("2026-06-21T00:00:00")}
+            target={new Date("2026-06-21T10:00:00")}
           />
           <CountdownPanel
             eyebrow="Wedding"

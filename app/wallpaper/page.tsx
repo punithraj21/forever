@@ -38,7 +38,7 @@ export default function WallpaperPage() {
         <Countdown
           title="Engagement"
           subtitle="The Promise"
-          targetISO="2026-06-21T00:00:00"
+          targetISO="2026-06-21T10:00:00"
           accent="amber"
           emoji="✦"
           passedVerb="Engaged"
