@@ -251,18 +251,6 @@ export default function Weather() {
           );
         })}
       </div>
-
-      <p className="mt-6 text-center text-[0.7rem] tracking-wide text-[#9a7080]">
-        Forecast by{" "}
-        <a
-          href="https://open-meteo.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline decoration-rose-300 underline-offset-2 hover:text-[#7a5560]"
-        >
-          Open-Meteo
-        </a>
-      </p>
     </section>
   );
 }
