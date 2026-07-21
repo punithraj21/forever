@@ -6,15 +6,24 @@ import { useEffect, useState } from "react";
 const DAY_MS = 1000 * 60 * 60 * 24;
 const FLIP_MS = 600;
 
-type Time = { days: number; hours: number; minutes: number; seconds: number };
+type Time = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  passed: boolean;
+};
 
 function getTime(target: Date): Time {
-  const ms = Math.max(0, target.getTime() - Date.now());
+  const diff = target.getTime() - Date.now();
+  const passed = diff <= 0;
+  const ms = Math.abs(diff);
   return {
     days: Math.floor(ms / DAY_MS),
     hours: Math.floor((ms / 3_600_000) % 24),
     minutes: Math.floor((ms / 60_000) % 60),
     seconds: Math.floor((ms / 1000) % 60),
+    passed,
   };
 }
 
@@ -93,9 +102,11 @@ function Colon({ big = false }: { big?: boolean }) {
 type Props = {
   target: Date;
   eyebrow: string;
+  /** Eyebrow shown once the date has passed, e.g. "Engaged", "Married". */
+  passedVerb: string;
 };
 
-function CountdownPanel({ target, eyebrow }: Props) {
+function CountdownPanel({ target, eyebrow, passedVerb }: Props) {
   const [t, setT] = useState<Time | null>(null);
 
   useEffect(() => {
@@ -103,6 +114,9 @@ function CountdownPanel({ target, eyebrow }: Props) {
     const id = setInterval(() => setT(getTime(target)), 1000);
     return () => clearInterval(id);
   }, [target]);
+
+  const passed = t?.passed ?? false;
+  const displayEyebrow = passed ? `✓ ${passedVerb}` : eyebrow;
 
   const day = target.getDate();
   const month = target.toLocaleDateString("en-US", { month: "long" });
@@ -116,7 +130,7 @@ function CountdownPanel({ target, eyebrow }: Props) {
     <div className="fade-in flex flex-col items-center text-center text-white">
       <div className="flex flex-col items-center">
         <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/95 ring-1 ring-white/15 backdrop-blur-sm">
-          {eyebrow}
+          {displayEyebrow}
         </span>
         <h2 className="mt-3 font-light leading-[0.95] tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] text-4xl sm:text-5xl lg:text-6xl">
           {day}
@@ -153,6 +167,12 @@ function CountdownPanel({ target, eyebrow }: Props) {
           <span className="text-center">Minutes</span>
           <span className="text-center">Seconds</span>
         </div>
+
+        {passed && (
+          <p className="mt-3 font-serif text-sm italic text-white/70">
+            and counting…
+          </p>
+        )}
       </div>
     </div>
   );
@@ -343,10 +363,12 @@ export default function WallpaperTwoPage() {
         <div className="grid w-full max-w-6xl gap-10 sm:gap-14 lg:grid-cols-2">
           <CountdownPanel
             eyebrow="Engagement"
+            passedVerb="Engaged"
             target={new Date("2026-06-21T10:00:00")}
           />
           <CountdownPanel
             eyebrow="Wedding"
+            passedVerb="Married"
             target={new Date("2027-02-11T11:30:00")}
           />
         </div>

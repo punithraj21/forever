@@ -33,6 +33,7 @@ export default function Home() {
           targetISO="2026-06-21T10:00:00"
           accent="amber"
           emoji="✦"
+          passedVerb="Engaged"
         />
         <Countdown
           title="Wedding Day"
@@ -40,6 +41,7 @@ export default function Home() {
           targetISO="2027-02-11T11:30:00"
           accent="rose"
           emoji="❀"
+          passedVerb="Married"
         />
       </div>
 
