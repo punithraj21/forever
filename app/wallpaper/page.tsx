@@ -42,6 +42,7 @@ export default function WallpaperPage() {
           accent="amber"
           emoji="✦"
           passedVerb="Engaged"
+          showMonthsLeft
         />
         <Countdown
           title="Wedding Day"
@@ -50,6 +51,7 @@ export default function WallpaperPage() {
           accent="rose"
           emoji="❀"
           passedVerb="Married"
+          showMonthsLeft
         />
       </div>
 

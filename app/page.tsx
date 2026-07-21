@@ -34,6 +34,7 @@ export default function Home() {
           accent="amber"
           emoji="✦"
           passedVerb="Engaged"
+          showMonthsLeft
         />
         <Countdown
           title="Wedding Day"
@@ -42,6 +43,7 @@ export default function Home() {
           accent="rose"
           emoji="❀"
           passedVerb="Married"
+          showMonthsLeft
         />
       </div>
 

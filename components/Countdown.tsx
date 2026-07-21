@@ -26,6 +26,27 @@ function getTimeState(target: Date): TimeState {
 
 const pad = (n: number) => n.toString().padStart(2, "0");
 
+function monthsAndDaysBetween(from: Date, to: Date): { months: number; days: number } {
+  let months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+  let days = to.getDate() - from.getDate();
+  if (days < 0) {
+    months -= 1;
+    days += new Date(to.getFullYear(), to.getMonth(), 0).getDate();
+  }
+  if (months < 0) {
+    months = 0;
+    days = 0;
+  }
+  return { months, days };
+}
+
+function formatMonthsDays({ months, days }: { months: number; days: number }): string {
+  const parts: string[] = [];
+  if (months > 0) parts.push(`${months} month${months === 1 ? "" : "s"}`);
+  if (days > 0 || parts.length === 0) parts.push(`${days} day${days === 1 ? "" : "s"}`);
+  return parts.join(", ");
+}
+
 type Props = {
   title: string;
   subtitle: string;
@@ -34,6 +55,8 @@ type Props = {
   emoji: string;
   /** Adjective shown when the date has passed, e.g. "engaged", "married". */
   passedVerb?: string;
+  /** When true (and the date hasn't passed yet), shows a "X months, Y days left" caption. */
+  showMonthsLeft?: boolean;
 };
 
 const accentStyles = {
@@ -62,6 +85,7 @@ export default function Countdown({
   accent,
   emoji,
   passedVerb,
+  showMonthsLeft,
 }: Props) {
   const target = new Date(targetISO);
   const [time, setTime] = useState<TimeState | null>(null);
@@ -82,6 +106,13 @@ export default function Countdown({
   });
 
   const effectiveSubtitle = isPast && passedVerb ? passedVerb : subtitle;
+
+  const monthsLeftLabel =
+    showMonthsLeft && time !== null && !isPast
+      ? formatMonthsDays(
+          monthsAndDaysBetween(new Date(target.getTime() - time.totalMs), target)
+        )
+      : null;
 
   return (
     <div
@@ -142,6 +173,11 @@ export default function Countdown({
           {passedVerb
             ? "and counting…"
             : "The day has arrived."}
+        </p>
+      )}
+      {monthsLeftLabel && (
+        <p className="mt-6 text-center font-serif text-base italic text-[#7a5560]">
+          {monthsLeftLabel} left
         </p>
       )}
     </div>
