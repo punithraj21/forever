@@ -30,3 +30,8 @@ yarn-error.log*
 next-env.d.ts
 .env
 bun.lock
+
+# cloudflare / opennext
+.open-next/
+.wrangler/
+.dev.vars

@@ -1,8 +1,6 @@
 import { ImageResponse } from "next/og";
 import QRCode from "qrcode";
 
-export const runtime = "edge";
-
 const VENUE_URL = "https://maps.app.goo.gl/bN6oeNQNvGHJVkiX7";
 
 async function loadGoogleFont(family: string, weight: number) {
