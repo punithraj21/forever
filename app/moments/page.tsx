@@ -1,5 +1,6 @@
 import Link from "next/link";
 import StoryPage from "@/components/story/StoryPage";
+import { TABS_AT_BOTTOM } from "@/components/story/StoryTabs";
 
 export const metadata = {
   title: "Our Story — Punith & Pallavi",
@@ -23,7 +24,10 @@ export default function MomentsPage() {
 
       <StoryPage />
 
-      <footer className="mt-20 pb-16 text-center text-sm text-[#9a7080]">
+      {/* The bottom tab dock would cover the footer line without the extra room. */}
+      <footer
+        className={`mt-20 text-center text-sm text-[#9a7080] ${TABS_AT_BOTTOM ? "pb-36" : "pb-16"}`}
+      >
         <p className="font-serif italic">
           Every second brings us closer, Punith &amp; Pallavi.
         </p>

@@ -1,11 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { BookOpen, ImageIcon, MapPin, SortArrows } from "./icons";
 import type { SortOrder } from "./utils";
 
 export type TabId = "story" | "photos" | "places";
 
 export type TabDef = { id: TabId; label: string; count: number | null };
+
+// ONE SWITCH for where the section tabs live. `true`: a floating dock fixed to
+// the bottom of the screen, always in thumb reach (the current layout). `false`:
+// the previous layout — a sticky bar under the hero. Everything that depends on
+// it (the dock itself, the owner's Add button offset, the page's bottom padding)
+// reads this constant or `DOCK_*` below, so flipping it is the whole revert.
+export const TABS_AT_BOTTOM = true;
+
+// Height of the dock (48px segments + track padding/border), plus a gap: the
+// owner's floating Add button sits just above it.
+export const DOCK_CLEARANCE = "5.25rem";
 
 const ICONS = { story: BookOpen, photos: ImageIcon, places: MapPin } as const;
 
@@ -31,52 +44,75 @@ export default function StoryTabs({
     tabs.findIndex((t) => t.id === tab),
   );
 
+  // The dock is portaled to <body> like the modals: a `fixed` element inside any
+  // ancestor with a lingering `transform` (see `.fade-in`) is positioned against
+  // that ancestor instead of the screen.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const switcher = (
+    <div
+      role="tablist"
+      aria-label="Sections"
+      className="relative mx-auto grid max-w-xl rounded-full border border-rose-200 bg-white/95 p-1 shadow-[0_12px_32px_-14px_rgba(225,29,72,0.45)] backdrop-blur-md"
+      style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+    >
+      <span
+        aria-hidden
+        className="absolute inset-y-1 left-1 rounded-full bg-gradient-to-br from-rose-500 to-pink-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.65)] transition-transform duration-300 ease-out motion-reduce:transition-none"
+        style={{
+          width: `calc((100% - 0.5rem) / ${tabs.length})`,
+          transform: `translateX(${activeIndex * 100}%)`,
+        }}
+      />
+      {tabs.map((t) => {
+        const active = t.id === tab;
+        const Icon = ICONS[t.id];
+        return (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            id={`tab-${t.id}`}
+            aria-selected={active}
+            onClick={() => onTab(t.id)}
+            className={`relative z-10 inline-flex min-h-12 items-center justify-center gap-1 rounded-full px-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors duration-300 sm:gap-2 sm:px-2 sm:text-xs sm:tracking-[0.2em] ${
+              active ? "text-white" : "text-rose-700 hover:text-rose-500"
+            }`}
+          >
+            <Icon size={16} className="shrink-0" />
+            {t.label}
+            {t.count !== null && (
+              <span
+                className={`min-w-[1.35rem] rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold tracking-normal tabular-nums transition-colors duration-300 ${
+                  active ? "bg-white/25 text-white" : "bg-rose-100 text-rose-600"
+                }`}
+              >
+                {t.count}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  if (TABS_AT_BOTTOM) {
+    if (!mounted) return null;
+    return createPortal(
+      <div
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-4"
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+      >
+        <div className="pointer-events-auto mx-auto max-w-md">{switcher}</div>
+      </div>,
+      document.body,
+    );
+  }
+
   return (
     <div className="sticky top-0 z-30 -mx-5 border-y border-rose-200/50 bg-[#fff8f3]/85 px-5 py-2.5 backdrop-blur-md">
-      <div
-        role="tablist"
-        aria-label="Sections"
-        className="relative mx-auto grid max-w-xl rounded-full border border-rose-200 bg-white/85 p-1 shadow-[0_12px_32px_-14px_rgba(225,29,72,0.45)]"
-        style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
-      >
-        <span
-          aria-hidden
-          className="absolute inset-y-1 left-1 rounded-full bg-gradient-to-br from-rose-500 to-pink-500 shadow-[0_8px_18px_-6px_rgba(225,29,72,0.65)] transition-transform duration-300 ease-out motion-reduce:transition-none"
-          style={{
-            width: `calc((100% - 0.5rem) / ${tabs.length})`,
-            transform: `translateX(${activeIndex * 100}%)`,
-          }}
-        />
-        {tabs.map((t) => {
-          const active = t.id === tab;
-          const Icon = ICONS[t.id];
-          return (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              id={`tab-${t.id}`}
-              aria-selected={active}
-              onClick={() => onTab(t.id)}
-              className={`relative z-10 inline-flex min-h-12 items-center justify-center gap-1 rounded-full px-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors duration-300 sm:gap-2 sm:px-2 sm:text-xs sm:tracking-[0.2em] ${
-                active ? "text-white" : "text-rose-700 hover:text-rose-500"
-              }`}
-            >
-              <Icon size={16} className="shrink-0" />
-              {t.label}
-              {t.count !== null && (
-                <span
-                  className={`min-w-[1.35rem] rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold tracking-normal tabular-nums transition-colors duration-300 ${
-                    active ? "bg-white/25 text-white" : "bg-rose-100 text-rose-600"
-                  }`}
-                >
-                  {t.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {switcher}
     </div>
   );
 }

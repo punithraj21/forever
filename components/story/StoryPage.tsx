@@ -9,7 +9,13 @@ import GalleryTab from "./GalleryTab";
 import Lightbox from "./Lightbox";
 import PlacesTab from "./PlacesTab";
 import StoryNumbers from "./StoryNumbers";
-import StoryTabs, { SortToggle, type TabDef, type TabId } from "./StoryTabs";
+import StoryTabs, {
+  DOCK_CLEARANCE,
+  SortToggle,
+  TABS_AT_BOTTOM,
+  type TabDef,
+  type TabId,
+} from "./StoryTabs";
 import SinceLastMet from "./SinceLastMet";
 import { Plus } from "./icons";
 import { useStoryFeed } from "./useStoryFeed";
@@ -173,7 +179,7 @@ export default function StoryPage() {
         ref={contentTopRef}
         role="tabpanel"
         aria-labelledby={`tab-${tab}`}
-        className="mt-4 scroll-mt-14 sm:mt-8"
+        className={`mt-4 sm:mt-8 ${TABS_AT_BOTTOM ? "scroll-mt-4" : "scroll-mt-14"}`}
       >
         {actionError && (
           <div
@@ -243,7 +249,11 @@ export default function StoryPage() {
             type="button"
             onClick={() => setEditing("new")}
             className="fixed right-5 z-40 inline-flex items-center gap-2 rounded-full bg-rose-500 px-6 py-3.5 text-xs font-medium uppercase tracking-[0.22em] text-white shadow-[0_12px_28px_-8px_rgba(225,29,72,0.55)] transition hover:bg-rose-600 active:scale-95"
-            style={{ bottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
+            style={{
+              bottom: TABS_AT_BOTTOM
+                ? `calc(${DOCK_CLEARANCE} + env(safe-area-inset-bottom))`
+                : "max(1.25rem, env(safe-area-inset-bottom))",
+            }}
           >
             <Plus size={18} />
             Add chapter
