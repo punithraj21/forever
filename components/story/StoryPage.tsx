@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase, type Moment } from "@/lib/supabase";
+import CalendarTab from "./CalendarTab";
 import ChapterForm from "./ChapterForm";
 import ChapterList from "./ChapterList";
 import LastMetEditor from "./LastMetEditor";
@@ -48,14 +49,15 @@ export default function StoryPage() {
 
   useEffect(() => {
     setUnlocked(localStorage.getItem(UNLOCK_KEY) === "true");
-    // Deep links: /moments#photos, /moments#places
+    // Deep links: /moments#calendar, #photos, #places
     const hash = window.location.hash.replace("#", "");
-    if (hash === "photos" || hash === "places") setTab(hash);
+    if (hash === "calendar" || hash === "photos" || hash === "places") setTab(hash);
   }, []);
 
   const showPlacesTab = unlocked || (overview?.places.length ?? 0) > 0;
   const tabs: TabDef[] = [
     { id: "story", label: "Story" },
+    { id: "calendar", label: "Calendar" },
     { id: "photos", label: "Photos" },
     ...(showPlacesTab ? [{ id: "places" as const, label: "Places" }] : []),
   ];
@@ -256,6 +258,15 @@ export default function StoryPage() {
             onOpenPhoto={openChapterPhotos}
           />
         )}
+
+        {tab === "calendar" &&
+          (overview ? (
+            <CalendarTab overview={overview} onRead={jumpToChapter} />
+          ) : (
+            <p role="status" className="text-center text-sm italic text-[#9a7080]">
+              Counting our days…
+            </p>
+          ))}
 
         {tab === "photos" &&
           (overview ? (

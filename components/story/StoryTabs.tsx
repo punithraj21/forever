@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { BookOpen, ImageIcon, MapPin, SortArrows } from "./icons";
+import { BookOpen, Calendar, ImageIcon, MapPin, SortArrows } from "./icons";
 import type { SortOrder } from "./utils";
 
-export type TabId = "story" | "photos" | "places";
+export type TabId = "story" | "calendar" | "photos" | "places";
 
 export type TabDef = { id: TabId; label: string };
 
@@ -16,7 +16,7 @@ export type TabDef = { id: TabId; label: string };
 // reads this constant, so flipping it is the whole revert.
 export const TABS_AT_BOTTOM = true;
 
-const ICONS = { story: BookOpen, photos: ImageIcon, places: MapPin } as const;
+const ICONS = { story: BookOpen, calendar: Calendar, photos: ImageIcon, places: MapPin } as const;
 
 // A big segmented switch rather than small underlined links: it's the only way
 // into Photos and Places, so it has to read as a control at a glance. White
@@ -35,6 +35,9 @@ export default function StoryTabs({
   tab: TabId;
   onTab: (t: TabId) => void;
 }) {
+  // Four tabs don't fit icon-beside-label on a phone, so from four up the icon
+  // sits above the label (same 40px height) and the dock is a little wider.
+  const many = tabs.length > 3;
   const activeIndex = Math.max(
     0,
     tabs.findIndex((t) => t.id === tab),
@@ -72,7 +75,11 @@ export default function StoryTabs({
             id={`tab-${t.id}`}
             aria-selected={active}
             onClick={() => onTab(t.id)}
-            className={`relative z-10 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors duration-300 sm:min-h-12 sm:gap-2 sm:text-xs sm:tracking-[0.2em] ${
+            className={`relative z-10 inline-flex min-h-10 items-center justify-center rounded-full font-semibold uppercase transition-colors duration-300 sm:min-h-12 ${
+                many
+                  ? "flex-col gap-0.5 px-0.5 text-[10px] tracking-[0.08em] sm:flex-row sm:gap-2 sm:px-2 sm:text-xs sm:tracking-[0.14em]"
+                  : "gap-1.5 px-2 text-[11px] tracking-[0.12em] sm:gap-2 sm:text-xs sm:tracking-[0.2em]"
+              } ${
               active ? "text-white" : "text-rose-700 hover:text-rose-500"
             }`}
           >
@@ -91,7 +98,13 @@ export default function StoryTabs({
         className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-4"
         style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
       >
-        <div className="pointer-events-auto mx-auto max-w-[19rem] sm:max-w-md">{switcher}</div>
+        <div
+          className={`pointer-events-auto mx-auto ${
+            many ? "max-w-[21rem] sm:max-w-lg" : "max-w-[19rem] sm:max-w-md"
+          }`}
+        >
+          {switcher}
+        </div>
       </div>,
       document.body,
     );
@@ -105,7 +118,7 @@ export default function StoryTabs({
 }
 
 // Oldest/newest flip. Lives with the section it changes, not in the tab bar:
-// beside the tabs it crowded them and read as a fourth tab.
+// beside the tabs it crowded them and read as one more tab.
 export function SortToggle({
   order,
   onOrder,

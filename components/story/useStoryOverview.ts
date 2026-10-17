@@ -21,6 +21,15 @@ export type OverviewPlace = {
   cover: string | null;
 };
 
+// One chapter, as the calendar needs it: enough to preview it without opening it.
+export type OverviewMeeting = {
+  momentId: string;
+  title: string | null;
+  occurredAt: string;
+  excerpt: string | null;
+  cover: string | null;
+};
+
 export type Overview = {
   total: number;
   firstDate: string | null;
@@ -33,6 +42,7 @@ export type Overview = {
   longestGapDays: number;
   photos: OverviewPhoto[]; // oldest first
   places: OverviewPlace[]; // oldest first
+  meetings: OverviewMeeting[]; // every chapter, oldest first
   // False until supabase/places.sql has been run (the columns don't exist yet).
   placesEnabled: boolean;
 };
@@ -63,12 +73,19 @@ function fetchAll() {
     .order("id", { ascending: true });
 }
 
+function excerptOf(note: string | null): string | null {
+  const t = (note ?? "").replace(/\s+/g, " ").trim();
+  if (!t) return null;
+  return t.length > 150 ? `${t.slice(0, 147).trimEnd()}…` : t;
+}
+
 function build(rows: Row[]): Overview {
   // Rows carry a `lat` key (null or not) only once the columns exist. With no
   // rows there is nothing to pin yet, so "not enabled" is harmless.
   const placesEnabled = rows.length > 0 && "lat" in rows[0];
   const photos: OverviewPhoto[] = [];
   const places: OverviewPlace[] = [];
+  const meetings: OverviewMeeting[] = [];
   let wordCount = 0;
   let longestGapDays = 0;
 
@@ -81,6 +98,13 @@ function build(rows: Row[]): Overview {
     }
     wordCount += (r.note ?? "").split(/\s+/).filter(Boolean).length;
     const paths = r.image_paths ?? [];
+    meetings.push({
+      momentId: r.id,
+      title: r.title,
+      occurredAt: r.occurred_at,
+      excerpt: excerptOf(r.note),
+      cover: paths[0] ?? null,
+    });
     for (const path of paths) {
       photos.push({
         path,
@@ -117,6 +141,7 @@ function build(rows: Row[]): Overview {
     longestGapDays,
     photos,
     places,
+    meetings,
     placesEnabled,
   };
 }
