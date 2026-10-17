@@ -203,3 +203,63 @@ body {
 .story-popup-link:hover {
   color: #9f1239;
 }
+
+/* Photo viewer: moving to the next/previous photo slides the old one out and the
+   new one in, in the direction of travel. The incoming animations use
+   `backwards` (no lingering transform); the outgoing ones are removed from the
+   DOM by a timer once finished. */
+@keyframes lb-in-next {
+  from {
+    opacity: 0;
+    transform: translateX(12%) scale(0.97);
+  }
+}
+@keyframes lb-in-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-12%) scale(0.97);
+  }
+}
+@keyframes lb-out-next {
+  to {
+    opacity: 0;
+    transform: translateX(-12%) scale(0.97);
+  }
+}
+@keyframes lb-out-prev {
+  to {
+    opacity: 0;
+    transform: translateX(12%) scale(0.97);
+  }
+}
+@keyframes lb-fade {
+  from {
+    opacity: 0;
+  }
+}
+.lb-in-next {
+  animation: lb-in-next 0.32s cubic-bezier(0.22, 0.8, 0.3, 1) backwards;
+}
+.lb-in-prev {
+  animation: lb-in-prev 0.32s cubic-bezier(0.22, 0.8, 0.3, 1) backwards;
+}
+.lb-out-next {
+  animation: lb-out-next 0.32s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.lb-out-prev {
+  animation: lb-out-prev 0.32s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.lb-fade {
+  animation: lb-fade 0.32s ease-out backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lb-in-next,
+  .lb-in-prev,
+  .lb-fade {
+    animation: none;
+  }
+  .lb-out-next,
+  .lb-out-prev {
+    display: none;
+  }
+}

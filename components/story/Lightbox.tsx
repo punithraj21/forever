@@ -7,6 +7,8 @@ import { lockBodyScroll, unlockBodyScroll } from "@/lib/scrollLock";
 import { ChevronLeft, ChevronRight, Close } from "./icons";
 
 const SWIPE_PX = 50;
+// Matches the `lb-*` animation durations in globals.css.
+const SLIDE_MS = 320;
 
 // Portaled to <body>: an ancestor's lingering transform would otherwise turn
 // `fixed inset-0` into "fill that ancestor" (see CLAUDE.md, modal pattern).
@@ -31,6 +33,48 @@ export default function Lightbox({
   const [index, setIndex] = useState(initialIndex);
   const safeIndex = total > 0 ? ((index % total) + total) % total : 0;
   const touchStartX = useRef<number | null>(null);
+  // Which way we last moved, and the photo that is sliding out. `dir` is null
+  // until the first change, so opening the viewer doesn't animate.
+  const [dir, setDir] = useState<1 | -1 | null>(null);
+  const [leaving, setLeaving] = useState<{ src: string; dir: 1 | -1; n: number } | null>(null);
+  const leaveCount = useRef(0);
+  const indexRef = useRef(safeIndex);
+
+  // Every way of changing photo goes through here: remember the one we are
+  // leaving so it can slide out while the new one slides in.
+  const go = (delta: 1 | -1) => {
+    if (total < 2) return;
+    setLeaving({
+      src: imageUrl(paths[indexRef.current]),
+      dir: delta,
+      n: ++leaveCount.current,
+    });
+    setDir(delta);
+    setIndex((i) => i + delta);
+  };
+  // The key handler below outlives renders, so it reads the latest of these.
+  const goRef = useRef(go);
+  useEffect(() => {
+    indexRef.current = safeIndex;
+    goRef.current = go;
+  });
+
+  // Drop the outgoing photo once its slide is over (a timer rather than
+  // animationend, so reduced-motion users, who get no animation, are covered).
+  useEffect(() => {
+    if (!leaving) return;
+    const t = setTimeout(() => setLeaving(null), SLIDE_MS + 60);
+    return () => clearTimeout(t);
+  }, [leaving]);
+
+  // Warm the neighbours so the incoming photo is already there when it slides in.
+  useEffect(() => {
+    if (total < 2) return;
+    for (const d of [1, -1]) {
+      const img = new Image();
+      img.src = imageUrl(paths[(((safeIndex + d) % total) + total) % total]);
+    }
+  }, [safeIndex, total, paths]);
 
   // Body lock lives in its own dep-less effect: onClose is an inline arrow at
   // the call site, so tying the lock to it would re-run it on every render.
@@ -42,8 +86,8 @@ export default function Lightbox({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      else if (e.key === "ArrowLeft") setIndex((i) => i - 1);
-      else if (e.key === "ArrowRight") setIndex((i) => i + 1);
+      else if (e.key === "ArrowLeft") goRef.current(-1);
+      else if (e.key === "ArrowRight") goRef.current(1);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -51,9 +95,9 @@ export default function Lightbox({
 
   if (total === 0 || typeof document === "undefined") return null;
 
-  const step = (delta: number) => (e: React.MouseEvent) => {
+  const step = (delta: 1 | -1) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIndex((i) => i + delta);
+    go(delta);
   };
 
   return createPortal(
@@ -68,14 +112,30 @@ export default function Lightbox({
         touchStartX.current = null;
         if (start === null || total < 2) return;
         const dx = e.changedTouches[0].clientX - start;
-        if (Math.abs(dx) > SWIPE_PX) setIndex((i) => i + (dx < 0 ? 1 : -1));
+        if (Math.abs(dx) > SWIPE_PX) go(dx < 0 ? 1 : -1);
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
+      {leaving && (
+        <img
+          key={`out-${leaving.n}`}
+          src={leaving.src}
+          alt=""
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 h-full w-full select-none object-contain ${
+            leaving.dir > 0 ? "lb-out-next" : "lb-out-prev"
+          }`}
+          draggable={false}
+        />
+      )}
       <img
+        // Remounting per photo restarts the slide-in animation.
+        key={safeIndex}
         src={imageUrl(paths[safeIndex])}
         alt={alt}
-        className="absolute inset-0 h-full w-full select-none object-contain"
+        className={`absolute inset-0 h-full w-full select-none object-contain ${
+          dir === null ? "" : dir > 0 ? "lb-in-next" : "lb-in-prev"
+        }`}
         draggable={false}
       />
 
@@ -129,7 +189,12 @@ export default function Lightbox({
             {action.label}
           </button>
         )}
-        <p className="max-w-full truncate text-center text-xs uppercase tracking-[0.2em] text-white/80">
+        <p
+          key={safeIndex}
+          className={`max-w-full truncate text-center text-xs uppercase tracking-[0.2em] text-white/80 ${
+            dir === null ? "" : "lb-fade"
+          }`}
+        >
           {total > 1 ? `${safeIndex + 1} of ${total} · ` : ""}
           {captions?.[safeIndex] ?? alt}
         </p>
