@@ -20,7 +20,7 @@ import { Close, Plus } from "./icons";
 import { extractErrorMessage, toDateInputValue } from "./utils";
 
 const inputClass =
-  "w-full rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-base text-[#3a2030] focus:border-rose-400 focus:outline-none sm:text-sm";
+  "w-full rounded-2xl border border-rose-200 bg-white/70 px-4 py-3 text-base text-[#3a2030] placeholder:text-[#b79aa6] focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-200 sm:text-sm";
 
 // Portaled to <body> (see CLAUDE.md, modal pattern). Bottom sheet on phones,
 // centered dialog from `sm` up. The outer overlay scrolls; the inner wrapper
@@ -136,12 +136,12 @@ export default function ChapterForm({
       >
         <form
           onSubmit={onSubmit}
-          className="w-full max-w-md rounded-t-3xl border border-rose-200 bg-white p-6 pb-8 shadow-2xl sm:rounded-3xl sm:p-7"
+          className="w-full max-w-md rounded-t-3xl border border-rose-200/70 bg-gradient-to-br from-rose-50 via-white to-pink-50 p-6 pb-8 shadow-[0_20px_60px_-15px_rgba(180,80,110,0.35)] sm:rounded-3xl sm:p-8"
         >
-          <p className="mb-1.5 text-xs uppercase tracking-[0.18em] text-rose-500">
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.32em] text-[#a06a7c]">
             {isEdit ? "edit chapter" : "a new chapter"}
           </p>
-          <h2 className="mb-5 font-serif text-2xl font-medium text-[#3a2030]">
+          <h2 className="mb-6 font-serif text-3xl font-light tracking-tight text-[#3a2030]">
             {isEdit ? "Reshape this memory" : "Another day with Pallavi"}
           </h2>
 
@@ -172,12 +172,12 @@ export default function ChapterForm({
                 rows={4}
                 placeholder="What did this day feel like?"
                 maxLength={1000}
-                className={`${inputClass} leading-relaxed`}
+                className={`${inputClass} resize-none leading-relaxed`}
               />
             </Field>
 
             <div>
-              <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.18em] text-rose-500">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.22em] text-rose-600">
                 Photos · {photoCount}/{MAX_PHOTOS_PER_CHAPTER}
               </span>
               <div className="grid grid-cols-3 gap-2">
@@ -200,7 +200,7 @@ export default function ChapterForm({
                   />
                 ))}
                 {canAddMore && (
-                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-rose-200 text-rose-500 transition hover:border-rose-300 hover:bg-rose-50">
+                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-rose-200 bg-white/70 text-rose-500 transition hover:border-rose-300 hover:bg-white">
                     <Plus size={20} />
                     <span className="text-[10px] font-medium uppercase tracking-wide">
                       Add
@@ -234,14 +234,14 @@ export default function ChapterForm({
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="rounded-full px-5 py-2.5 text-sm font-medium text-[#7a5560] hover:text-[#3a2030] disabled:opacity-60"
+              className="rounded-full px-5 py-3 text-xs font-medium uppercase tracking-[0.22em] text-[#7a5560] transition hover:text-[#3a2030] disabled:opacity-60"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="rounded-full bg-rose-500 px-6 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-rose-600 disabled:opacity-60"
+              className="rounded-full bg-rose-500 px-6 py-3 text-xs font-medium uppercase tracking-[0.22em] text-white shadow-sm transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving ? "Saving…" : isEdit ? "Save changes" : "Save chapter"}
             </button>
@@ -256,7 +256,7 @@ export default function ChapterForm({
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.18em] text-rose-500">
+      <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.22em] text-rose-600">
         {label}
       </span>
       {children}
@@ -280,7 +280,7 @@ function RemoveButton({ onRemove }: { onRemove: () => void }) {
 
 function Thumb({ src, onRemove }: { src: string; onRemove: () => void }) {
   return (
-    <div className="relative aspect-square overflow-hidden rounded-xl border border-rose-200 bg-rose-50">
+    <div className="relative aspect-square overflow-hidden rounded-2xl border border-rose-200 bg-rose-50">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt="" className="h-full w-full object-cover" />
       <RemoveButton onRemove={onRemove} />
@@ -305,7 +305,7 @@ function PendingThumb({
   }, [file]);
 
   return (
-    <div className="relative aspect-square overflow-hidden rounded-xl border-2 border-dashed border-rose-300 bg-rose-50">
+    <div className="relative aspect-square overflow-hidden rounded-2xl border-2 border-dashed border-rose-300 bg-rose-50">
       {url && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt={file.name} className="h-full w-full object-cover" />
