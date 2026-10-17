@@ -37,9 +37,6 @@ export type Overview = {
   placesEnabled: boolean;
 };
 
-const BASE_COLS = "id, occurred_at, created_at, title, note, image_paths";
-const PLACE_COLS = "place_name, lat, lng";
-
 type Row = {
   id: string;
   occurred_at: string;
@@ -51,23 +48,25 @@ type Row = {
   lng?: number | null;
 };
 
-function fetchAll(cols: string) {
+function fetchAll() {
   // Same three-key order as the paginated feed, so both agree on what is next to what
   // (and so the "days apart" between neighbours is the same everywhere).
+  //
+  // `select("*")` rather than naming columns: naming the place columns before
+  // supabase/places.sql has run is a 400 on every page load. With `*` the query
+  // never errors, and whether the columns exist is read off the rows instead.
   return supabase
     .from("moments")
-    .select(cols)
+    .select("*")
     .order("occurred_at", { ascending: true })
     .order("created_at", { ascending: true })
     .order("id", { ascending: true });
 }
 
-// Postgres "undefined_column": the place columns haven't been added yet.
-function isMissingColumn(err: { code?: string; message?: string }): boolean {
-  return err.code === "42703" || /column .* does not exist/i.test(err.message ?? "");
-}
-
-function build(rows: Row[], placesEnabled: boolean): Overview {
+function build(rows: Row[]): Overview {
+  // Rows carry a `lat` key (null or not) only once the columns exist. With no
+  // rows there is nothing to pin yet, so "not enabled" is harmless.
+  const placesEnabled = rows.length > 0 && "lat" in rows[0];
   const photos: OverviewPhoto[] = [];
   const places: OverviewPlace[] = [];
   let wordCount = 0;
@@ -133,14 +132,9 @@ export function useStoryOverview() {
 
   const refreshOverview = useCallback(async () => {
     try {
-      let placesEnabled = true;
-      let res = await fetchAll(`${BASE_COLS}, ${PLACE_COLS}`);
-      if (res.error && isMissingColumn(res.error)) {
-        placesEnabled = false;
-        res = await fetchAll(BASE_COLS);
-      }
+      const res = await fetchAll();
       if (res.error) throw res.error;
-      setOverview(build((res.data ?? []) as unknown as Row[], placesEnabled));
+      setOverview(build((res.data ?? []) as unknown as Row[]));
       setOverviewError(null);
     } catch (err) {
       setOverviewError(extractErrorMessage(err));
