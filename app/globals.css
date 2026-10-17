@@ -83,3 +83,21 @@ body {
     display: none;
   }
 }
+
+/* Our Story feed (components/story): each chapter eases in as its page lands.
+   Fill mode is `backwards`, not `both`, so no transform lingers afterward —
+   a lingering one would make the card a containing block for `fixed`
+   descendants (same trap as .fade-in above). */
+@keyframes story-rise {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+.story-rise {
+  animation: story-rise 0.5s ease-out backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-rise {
+    animation: none;
+  }
+}
