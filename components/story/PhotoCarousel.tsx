@@ -51,10 +51,14 @@ export default function PhotoCarousel({
       <div
         ref={trackRef}
         onScroll={onScroll}
-        className="absolute inset-0 flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        // overflow-y-hidden: declaring only overflow-x makes overflow-y compute to
+        // `auto`, and the scaled blur below would then let the photo be dragged up.
+        className="absolute inset-0 flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {photos.map((path, i) => (
-          <div key={path} className="relative h-full w-full flex-none snap-center">
+          // overflow-hidden: the blurred copy is scaled up 10%; clip it to its own slide
+          // so it can't add scrollable area in either direction.
+          <div key={path} className="relative h-full w-full flex-none snap-center overflow-hidden">
             {/* Blurred copy fills any letterbox space with the photo's own colors */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
