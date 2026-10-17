@@ -7,7 +7,7 @@ import type { SortOrder } from "./utils";
 
 export type TabId = "story" | "photos" | "places";
 
-export type TabDef = { id: TabId; label: string; count: number | null };
+export type TabDef = { id: TabId; label: string };
 
 // ONE SWITCH for where the section tabs live. `true`: a floating dock fixed to
 // the bottom of the screen, always in thumb reach (the current layout). `false`:
@@ -25,7 +25,7 @@ const ICONS = { story: BookOpen, photos: ImageIcon, places: MapPin } as const;
 // A big segmented switch rather than small underlined links: it's the only way
 // into Photos and Places, so it has to read as a control at a glance. White
 // track, rose gradient thumb that slides to the active section (the same rose as
-// the Add button), an icon and a count on every segment.
+// the Add button), an icon and a label on every segment (no counts; Punith found them noise).
 //
 // Sticky so you can hop between sections from anywhere. Sections are tabs rather
 // than stacked blocks because the story itself scrolls forever — anything
@@ -76,21 +76,12 @@ export default function StoryTabs({
             id={`tab-${t.id}`}
             aria-selected={active}
             onClick={() => onTab(t.id)}
-            className={`relative z-10 inline-flex min-h-12 items-center justify-center gap-1 rounded-full px-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors duration-300 sm:gap-2 sm:px-2 sm:text-xs sm:tracking-[0.2em] ${
+            className={`relative z-10 inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors duration-300 sm:tracking-[0.2em] ${
               active ? "text-white" : "text-rose-700 hover:text-rose-500"
             }`}
           >
-            <Icon size={16} className="shrink-0" />
+            <Icon size={18} className="shrink-0" />
             {t.label}
-            {t.count !== null && (
-              <span
-                className={`min-w-[1.35rem] rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold tracking-normal tabular-nums transition-colors duration-300 ${
-                  active ? "bg-white/25 text-white" : "bg-rose-100 text-rose-600"
-                }`}
-              >
-                {t.count}
-              </span>
-            )}
           </button>
         );
       })}

@@ -56,11 +56,9 @@ export default function StoryPage() {
 
   const showPlacesTab = unlocked || (overview?.places.length ?? 0) > 0;
   const tabs: TabDef[] = [
-    { id: "story", label: "Story", count: overview?.total ?? total },
-    { id: "photos", label: "Photos", count: overview?.photoCount ?? null },
-    ...(showPlacesTab
-      ? [{ id: "places" as const, label: "Places", count: overview?.places.length ?? null }]
-      : []),
+    { id: "story", label: "Story" },
+    { id: "photos", label: "Photos" },
+    ...(showPlacesTab ? [{ id: "places" as const, label: "Places" }] : []),
   ];
 
   const changeTab = (next: TabId) => {
