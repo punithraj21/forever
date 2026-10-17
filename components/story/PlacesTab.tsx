@@ -1,7 +1,8 @@
 "use client";
 
 import SectionHeader from "./SectionHeader";
-import PlacesMap, { groupPlaces } from "./PlacesMap";
+import PlacesMap from "./PlacesMap";
+import { groupPlacesByName, placeKey } from "./placeGroups";
 import { Heart } from "./icons";
 import type { Overview } from "./useStoryOverview";
 import { formatShortDate } from "./utils";
@@ -21,7 +22,7 @@ export default function PlacesTab({
   onRead: (momentId: string) => void;
 }) {
   const { places, placesEnabled } = overview;
-  const groups = groupPlaces(places);
+  const groups = groupPlacesByName(places);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -67,7 +68,7 @@ export default function PlacesTab({
           <ul className="mt-8 grid gap-3 sm:grid-cols-2">
             {groups.map((group) => (
               <li
-                key={`${group[0].lat}-${group[0].lng}`}
+                key={placeKey(group[0].placeName)}
                 className="rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-50/80 to-pink-100/50 p-4"
               >
                 <p className="flex items-center gap-2 font-serif text-xl text-[#3a2030]">
