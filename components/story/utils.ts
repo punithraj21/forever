@@ -73,29 +73,6 @@ export function extractErrorMessage(err: unknown): string {
   return String(err ?? "Unknown error");
 }
 
-// Pulls coordinates out of whatever the owner pastes: a full Google Maps URL
-// (`!3dLAT!4dLNG` is the place itself, `@lat,lng` only the viewport centre, so
-// it is tried second), a `?q=lat,lng` link, or a bare "lat, lng".
-// Short share links (maps.app.goo.gl) carry no coordinates and can't be
-// resolved from the browser, so they correctly return null.
-export function parseCoords(text: string): { lat: number; lng: number } | null {
-  const num = "(-?\\d+(?:\\.\\d+)?)";
-  const patterns = [
-    new RegExp(`!3d${num}!4d${num}`),
-    new RegExp(`@${num},${num}`),
-    new RegExp(`[?&](?:q|ll|query|destination)=${num}(?:,|%2C)${num}`, "i"),
-    new RegExp(`^\\s*${num}\\s*[, ]\\s*${num}\\s*$`),
-  ];
-  for (const re of patterns) {
-    const m = re.exec(text);
-    if (!m) continue;
-    const lat = Number(m[1]);
-    const lng = Number(m[2]);
-    if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
-  }
-  return null;
-}
-
 // Whole calendar days between two timestamps, by local date (so "11 Jun 23:00"
 // to "12 Jun 01:00" is 1 day, and DST can't skew it). Direction-agnostic.
 export function calendarDaysBetween(aIso: string, bIso: string): number {

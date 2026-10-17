@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { parseCoords } from "./utils";
+import { useEffect, useRef, useState } from "react";
+import { parseCoords } from "@/lib/mapLinks";
+import PlacePickerMap from "./PlacePickerMap";
 
 export type PlaceValue = { name: string; lat: number | null; lng: number | null };
 
@@ -14,9 +15,15 @@ type Hit = {
   longitude: number;
 };
 
-// Two ways to pin a chapter, both keyless: search a town by name (Open-Meteo's
-// geocoder, the same free service the Weather section uses), or paste a
-// Google Maps link for an exact spot like a particular temple.
+// "exact" = coordinates came from the link or the owner tapped the map.
+// "area"  = only the town was found; the owner should tap the exact spot.
+type Precision = "exact" | "area";
+
+// Three ways to pin a chapter, all keyless, then fine-tune on the map:
+//   1. search a town by name (Open-Meteo's geocoder, as the Weather section uses);
+//   2. paste a Google Maps link — the phone's Share link works, the server
+//      follows it (/api/resolve-map);
+//   3. tap / drag on the map for the exact spot.
 export default function PlacePicker({
   value,
   onChange,
@@ -28,7 +35,18 @@ export default function PlacePicker({
 }) {
   const [hits, setHits] = useState<Hit[] | null>(null);
   const [searching, setSearching] = useState(false);
+  const [linkText, setLinkText] = useState("");
+  const [resolving, setResolving] = useState(false);
+  const [precision, setPrecision] = useState<Precision>("exact");
   const [msg, setMsg] = useState<string | null>(null);
+
+  // The link effect below runs on a debounce; it must see the latest value.
+  const valueRef = useRef(value);
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    valueRef.current = value;
+    onChangeRef.current = onChange;
+  });
 
   const search = async () => {
     const q = value.name.trim();
@@ -63,21 +81,77 @@ export default function PlacePicker({
       lat: h.latitude,
       lng: h.longitude,
     });
+    setPrecision("area");
     setHits(null);
-    setMsg(null);
+    setMsg("Tap the map to drop the pin on the exact spot.");
   };
 
-  const onLink = (text: string) => {
-    const c = parseCoords(text);
-    if (c) {
-      onChange({ ...value, lat: c.lat, lng: c.lng });
+  // Pasted link: coordinates in the text are used straight away; anything else
+  // that looks like a link goes to the server (short links need following).
+  useEffect(() => {
+    const text = linkText.trim();
+    if (!text) return;
+
+    const local = parseCoords(text);
+    if (local) {
+      onChangeRef.current({ ...valueRef.current, lat: local.lat, lng: local.lng });
+      setPrecision("exact");
       setMsg("Pinned from your link.");
-    } else if (text.trim()) {
-      setMsg(
-        "Couldn't find coordinates there. Use the full link from the browser's address bar (short share links don't include them), or search above.",
-      );
+      return;
     }
-  };
+    if (!/https?:\/\//i.test(text)) {
+      setMsg("Paste a Google Maps link, or coordinates like 13.63, 74.69.");
+      return;
+    }
+
+    const ctl = new AbortController();
+    const timer = setTimeout(async () => {
+      setResolving(true);
+      setMsg(null);
+      try {
+        const res = await fetch(`/api/resolve-map?url=${encodeURIComponent(text)}`, {
+          signal: ctl.signal,
+        });
+        const data = (await res.json()) as {
+          lat?: number;
+          lng?: number;
+          name?: string;
+          approximate?: boolean;
+          matched?: string;
+          error?: string;
+        };
+        if (!res.ok || data.lat === undefined || data.lng === undefined) {
+          throw new Error(data.error ?? "Couldn't read that link.");
+        }
+        const current = valueRef.current;
+        onChangeRef.current({
+          name: current.name.trim() ? current.name : (data.name ?? ""),
+          lat: data.lat,
+          lng: data.lng,
+        });
+        setPrecision(data.approximate ? "area" : "exact");
+        setMsg(
+          data.approximate
+            ? `Found the area around ${data.matched ?? "that place"}. Tap the map to drop the pin on the exact spot.`
+            : data.matched
+              ? "Found it on the map. Check the pin, and tap the map if it's off."
+              : "Pinned from your link.",
+        );
+      } catch (e) {
+        if ((e as Error).name !== "AbortError") {
+          setMsg(e instanceof Error ? e.message : "Couldn't read that link.");
+        }
+      } finally {
+        if (!ctl.signal.aborted) setResolving(false);
+      }
+    }, 600);
+    return () => {
+      clearTimeout(timer);
+      ctl.abort();
+    };
+  }, [linkText]);
+
+  const pinned = value.lat !== null && value.lng !== null;
 
   return (
     <div>
@@ -130,34 +204,64 @@ export default function PlacePicker({
         </ul>
       )}
 
-      {value.lat !== null && value.lng !== null && (
-        <p className="mt-2 flex items-center gap-2 text-xs text-[#7a5560]">
-          <span aria-hidden>📍</span>
-          Pinned at {value.lat.toFixed(4)}, {value.lng.toFixed(4)}
-          <button
-            type="button"
-            onClick={() => onChange({ name: "", lat: null, lng: null })}
-            className="ml-auto font-medium uppercase tracking-wide text-rose-600 hover:text-rose-700"
-          >
-            Clear
-          </button>
+      <label className="mt-3 block">
+        <span className="mb-1 block text-xs text-[#9a7080]">
+          Or paste a Google Maps link (the Share link works)
+        </span>
+        <input
+          type="text"
+          inputMode="url"
+          value={linkText}
+          onChange={(e) => setLinkText(e.target.value)}
+          placeholder="https://maps.app.goo.gl/…"
+          aria-label="Google Maps link"
+          className={inputClass}
+        />
+      </label>
+
+      {(msg || resolving) && (
+        <p role="status" className="mt-2 text-xs text-[#7a5560]">
+          {resolving ? "Looking that link up…" : msg}
         </p>
       )}
 
-      <details className="mt-2">
-        <summary className="cursor-pointer text-xs text-[#9a7080] hover:text-rose-600">
-          Or paste a Google Maps link for an exact spot
-        </summary>
-        <input
-          type="text"
-          onChange={(e) => onLink(e.target.value)}
-          placeholder="https://www.google.com/maps/place/…"
-          aria-label="Google Maps link"
-          className={`${inputClass} mt-2`}
-        />
-      </details>
+      {pinned && (
+        <>
+          <PlacePickerMap
+            lat={value.lat as number}
+            lng={value.lng as number}
+            zoom={precision === "exact" ? 16 : 13}
+            onMove={(lat, lng) => {
+              onChangeRef.current({ ...valueRef.current, lat, lng });
+              setPrecision("exact");
+              setMsg("Pin moved.");
+            }}
+          />
+          <p className="mt-2 flex items-center gap-2 text-xs text-[#7a5560]">
+            <span aria-hidden>📍</span>
+            <span>
+              Pinned at {(value.lat as number).toFixed(4)}, {(value.lng as number).toFixed(4)}
+              {precision === "area" && " · approximate"}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                onChange({ name: "", lat: null, lng: null });
+                setLinkText("");
+                setMsg(null);
+              }}
+              className="ml-auto font-medium uppercase tracking-wide text-rose-600 hover:text-rose-700"
+            >
+              Clear
+            </button>
+          </p>
+        </>
+      )}
 
-      {msg && <p className="mt-2 text-xs text-[#7a5560]">{msg}</p>}
+      <p className="mt-2 text-[11px] leading-relaxed text-[#b79aa6]">
+        Tip: in Google Maps, press and hold the exact spot, tap the coordinates
+        that appear, and paste them above.
+      </p>
     </div>
   );
 }
