@@ -15,10 +15,14 @@ export default function PhotoCarousel({
   photos,
   alt,
   onOpen,
+  maxHeight = "78vh",
+  className = "rounded-2xl",
 }: {
   photos: string[];
   alt: string;
   onOpen: (index: number) => void;
+  maxHeight?: string;
+  className?: string;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
@@ -41,8 +45,8 @@ export default function PhotoCarousel({
     <div
       // w-full is load-bearing: with `width: auto`, the max-height clamp is
       // transferred through the aspect-ratio and shrinks the frame's width.
-      className="relative w-full overflow-hidden rounded-2xl bg-rose-50"
-      style={{ aspectRatio: ratio, maxHeight: "78vh" }}
+      className={`relative w-full overflow-hidden bg-rose-50 ${className}`}
+      style={{ aspectRatio: ratio, maxHeight }}
     >
       <div
         ref={trackRef}

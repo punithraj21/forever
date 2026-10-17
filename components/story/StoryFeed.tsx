@@ -3,15 +3,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase, type Moment } from "@/lib/supabase";
-import ChapterCard from "./ChapterCard";
 import ChapterForm from "./ChapterForm";
+import ChapterReader from "./ChapterReader";
 import Lightbox from "./Lightbox";
+import MemoryTile from "./MemoryTile";
+import MonthTile from "./MonthTile";
 import { Heart, Plus } from "./icons";
 import { PAGE_SIZE, useStoryFeed } from "./useStoryFeed";
 import {
   extractErrorMessage,
+  formatMonthName,
   formatMonthYear,
   formatShortDate,
+  formatYear,
   monthKey,
   type SortOrder,
 } from "./utils";
@@ -22,13 +26,17 @@ const UNLOCK_KEY = "moments_unlocked";
 const primaryButton =
   "rounded-full bg-rose-500 px-6 py-3 text-xs font-medium uppercase tracking-[0.22em] text-white shadow-sm transition hover:bg-rose-600";
 
-type Entry = { m: Moment; day: number; index: number };
-type Group = { key: string; label: string; entries: Entry[] };
+const gridClass = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4";
+
+type Cell =
+  | { kind: "month"; key: string; label: string; month: string; year: string }
+  | { kind: "chapter"; m: Moment; day: number; index: number };
 
 export default function StoryFeed() {
   const [order, setOrder] = useState<SortOrder>("oldest");
   const [unlocked, setUnlocked] = useState(false);
   const [editing, setEditing] = useState<Moment | "new" | null>(null);
+  const [readerIndex, setReaderIndex] = useState<number | null>(null);
   const [lightbox, setLightbox] = useState<{
     paths: string[];
     index: number;
@@ -67,11 +75,25 @@ export default function StoryFeed() {
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) loadMore();
       },
-      { rootMargin: "0px 0px 800px 0px" },
+      { rootMargin: "0px 0px 900px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
   }, [armed, loadMore, items.length]);
+
+  // Reading forward past what's loaded pulls the next page in, so the reader
+  // behaves like one endless book.
+  useEffect(() => {
+    if (readerIndex === null || !hasMore || fetching || error) return;
+    if (readerIndex >= items.length - 2) loadMore();
+  }, [readerIndex, items.length, hasMore, fetching, error, loadMore]);
+
+  // A reload (edit / delete / sort flip) can shorten the list under the reader.
+  useEffect(() => {
+    if (readerIndex !== null && readerIndex >= items.length) {
+      setReaderIndex(null);
+    }
+  }, [readerIndex, items.length]);
 
   const changeOrder = (next: SortOrder) => {
     if (next === order) return;
@@ -100,33 +122,54 @@ export default function StoryFeed() {
 
   // Day N is the chapter's chronological ordinal, so in newest-first mode it
   // counts down from the total.
-  const groups = useMemo<Group[]>(() => {
-    const out: Group[] = [];
+  const dayFor = useCallback(
+    (index: number) =>
+      order === "oldest" ? index + 1 : (total ?? items.length) - index,
+    [order, total, items.length],
+  );
+
+  // One flat list: a month tile precedes each month's first chapter, so the
+  // wall stays a single dense grid with no half-empty rows between months.
+  const cells = useMemo<Cell[]>(() => {
+    const out: Cell[] = [];
+    let lastKey: string | null = null;
     items.forEach((m, index) => {
-      const day = order === "oldest" ? index + 1 : (total ?? items.length) - index;
       const key = monthKey(m.occurred_at);
-      const last = out[out.length - 1];
-      if (last && last.key === key) last.entries.push({ m, day, index });
-      else {
+      if (key !== lastKey) {
         out.push({
+          kind: "month",
           key,
           label: formatMonthYear(m.occurred_at),
-          entries: [{ m, day, index }],
+          month: formatMonthName(m.occurred_at),
+          year: formatYear(m.occurred_at),
         });
+        lastKey = key;
       }
+      out.push({ kind: "chapter", m, day: dayFor(index), index });
     });
     return out;
-  }, [items, order, total]);
+  }, [items, dayFor]);
 
   const openPhoto = useCallback(
     (paths: string[], index: number, alt: string) =>
       setLightbox({ paths, index, alt }),
     [],
   );
+  const closeReader = useCallback(() => setReaderIndex(null), []);
+  const prevChapter = useCallback(
+    () => setReaderIndex((i) => (i !== null && i > 0 ? i - 1 : i)),
+    [],
+  );
+  const nextChapter = useCallback(
+    () =>
+      setReaderIndex((i) => (i !== null && i < items.length - 1 ? i + 1 : i)),
+    [items.length],
+  );
 
   const initialLoading = total === null && !error;
   const empty = total === 0 && !error;
   const done = items.length > 0 && !hasMore && !error;
+  const readerItem = readerIndex !== null ? (items[readerIndex] ?? null) : null;
 
   return (
     <div className="w-full">
@@ -141,48 +184,58 @@ export default function StoryFeed() {
           from the day we met
         </p>
         <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-rose-300 to-transparent" />
-
-        <div className="mt-6 flex h-9 items-center justify-center">
-          {firstDate && total ? (
+        <div className="mt-6 flex h-8 items-center justify-center">
+          {firstDate && (
             <p className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-rose-700">
               <Heart size={12} className="text-rose-500" />
               Since {formatShortDate(firstDate)}
-              <span aria-hidden>·</span>
-              {total} {total === 1 ? "chapter" : "chapters"}
             </p>
-          ) : null}
+          )}
         </div>
-
-        {(total ?? 0) >= 2 && (
-          <div
-            role="group"
-            aria-label="Sort chapters"
-            className="mx-auto mt-5 inline-flex rounded-full border border-rose-200/60 bg-white/70 p-1 shadow-sm"
-          >
-            {(["oldest", "newest"] as const).map((o) => (
-              <button
-                key={o}
-                type="button"
-                onClick={() => changeOrder(o)}
-                aria-pressed={order === o}
-                className={`rounded-full border px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] transition ${
-                  order === o
-                    ? "border-rose-200 bg-rose-100 text-rose-700"
-                    : "border-transparent text-[#9a7080] hover:text-rose-600"
-                }`}
-              >
-                {o === "oldest" ? "Oldest first" : "Newest first"}
-              </button>
-            ))}
-          </div>
-        )}
       </header>
 
-      <div ref={feedTopRef} className="mx-auto mt-10 w-full max-w-xl scroll-mt-4">
+      {/* Sticky, so the sort is one tap away from anywhere on the wall */}
+      <div className="sticky top-0 z-30 -mx-5 mt-8 border-y border-rose-200/50 bg-[#fff8f3]/80 px-5 backdrop-blur-md">
+        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between gap-3">
+          {total ? (
+            <>
+              <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.18em] text-rose-700">
+                <Heart size={12} className="text-rose-500" />
+                {total} {total === 1 ? "chapter" : "chapters"}
+              </p>
+              {total >= 2 && (
+                <div
+                  role="group"
+                  aria-label="Sort chapters"
+                  className="inline-flex rounded-full border border-rose-200/60 bg-white/70 p-0.5"
+                >
+                  {(["oldest", "newest"] as const).map((o) => (
+                    <button
+                      key={o}
+                      type="button"
+                      onClick={() => changeOrder(o)}
+                      aria-pressed={order === o}
+                      className={`rounded-full border px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.18em] transition ${
+                        order === o
+                          ? "border-rose-200 bg-rose-100 text-rose-700"
+                          : "border-transparent text-[#9a7080] hover:text-rose-600"
+                      }`}
+                    >
+                      {o === "oldest" ? "Oldest" : "Newest"}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : null}
+        </div>
+      </div>
+
+      <div ref={feedTopRef} className="mt-10 w-full scroll-mt-20">
         {actionError && (
           <div
             role="alert"
-            className="mb-6 flex items-start justify-between gap-3 rounded-2xl border border-red-200 bg-red-50/90 p-4 text-sm text-red-700"
+            className="mx-auto mb-8 flex max-w-xl items-start justify-between gap-3 rounded-2xl border border-red-200 bg-red-50/90 p-4 text-sm text-red-700"
           >
             <div>
               <p className="font-medium">That didn&rsquo;t work</p>
@@ -201,7 +254,7 @@ export default function StoryFeed() {
         {error && items.length === 0 && (
           <div
             role="alert"
-            className="rounded-3xl border border-red-200 bg-red-50/80 p-6 text-center"
+            className="mx-auto max-w-xl rounded-3xl border border-red-200 bg-red-50/80 p-6 text-center"
           >
             <p className="font-medium text-red-700">
               Couldn&rsquo;t load the story
@@ -218,7 +271,7 @@ export default function StoryFeed() {
         )}
 
         {empty && (
-          <div className="rounded-3xl border border-dashed border-rose-200 bg-white/40 p-10 text-center">
+          <div className="mx-auto max-w-xl rounded-3xl border border-dashed border-rose-200 bg-white/40 p-10 text-center">
             <p className="font-serif text-xl italic text-[#7a5560]">
               The story is just beginning…
             </p>
@@ -230,104 +283,91 @@ export default function StoryFeed() {
           </div>
         )}
 
-        {(initialLoading || items.length > 0) && (
-          <div className="relative pl-9">
-            <div
-              aria-hidden
-              className={`pointer-events-none absolute left-[13px] top-0 w-px bg-gradient-to-b from-rose-200 to-rose-200/70 ${
-                done ? "bottom-5" : "bottom-0"
-              }`}
-            />
+        {initialLoading && (
+          <div role="status">
+            <span className="sr-only">Loading our story…</span>
+            <ul className={gridClass}>
+              {Array.from({ length: 6 }, (_, i) => (
+                <li key={i}>
+                  <SkeletonTile />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-            {initialLoading && (
-              <div role="status" className="space-y-8">
-                <span className="sr-only">Loading our story…</span>
-                <SkeletonCard />
-                <SkeletonCard />
-              </div>
-            )}
-
-            {groups.map((group) => (
-              <section key={group.key} aria-label={group.label}>
-                <h2 className="sticky top-3 z-20 mb-5 flex h-8 items-center">
-                  <span
-                    aria-hidden
-                    className="absolute -left-[31.5px] h-[18px] w-[18px] rounded-full border-[3px] border-white bg-rose-500 shadow"
+        {items.length > 0 && (
+          <ul className={gridClass}>
+            {cells.map((cell) =>
+              cell.kind === "month" ? (
+                <li key={`month-${cell.key}`} aria-label={cell.label}>
+                  <MonthTile month={cell.month} year={cell.year} />
+                </li>
+              ) : (
+                <li
+                  key={cell.m.id}
+                  className="story-rise"
+                  style={{
+                    animationDelay: `${(cell.index % PAGE_SIZE) * 45}ms`,
+                  }}
+                >
+                  <MemoryTile
+                    m={cell.m}
+                    day={cell.day}
+                    deleting={deletingId === cell.m.id}
+                    onOpen={() => setReaderIndex(cell.index)}
                   />
-                  <span className="rounded-full border border-rose-200 bg-rose-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-rose-700 shadow-sm">
-                    {group.label}
-                  </span>
-                </h2>
-                <ol className="space-y-8 pb-8">
-                  {group.entries.map(({ m, day, index }) => (
-                    <li
-                      key={m.id}
-                      className="story-rise relative"
-                      style={{ animationDelay: `${(index % PAGE_SIZE) * 70}ms` }}
-                    >
-                      <span
-                        aria-hidden
-                        className="absolute -left-[28.5px] top-[40px] h-3 w-3 rounded-full border-2 border-white bg-rose-300 shadow-sm"
-                      />
-                      <ChapterCard
-                        m={m}
-                        day={day}
-                        unlocked={unlocked}
-                        deleting={deletingId === m.id}
-                        onEdit={() => setEditing(m)}
-                        onDelete={() => onDelete(m)}
-                        onOpenPhoto={openPhoto}
-                      />
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            ))}
-
-            {hasMore && <div ref={sentinelRef} aria-hidden className="h-px" />}
-
-            {loadingMore && items.length > 0 && (
-              <div role="status" className="pb-8">
-                <span className="sr-only">Loading more chapters…</span>
-                <SkeletonCard />
-              </div>
+                </li>
+              ),
             )}
+            {/* Placeholders continue the same grid while the next page loads */}
+            {loadingMore &&
+              Array.from({ length: 3 }, (_, i) => (
+                <li key={`sk-${i}`} aria-hidden>
+                  <SkeletonTile />
+                </li>
+              ))}
+          </ul>
+        )}
 
-            {error && items.length > 0 && (
-              <div role="alert" className="pb-8 text-center">
-                <p className="text-sm text-red-700">
-                  Couldn&rsquo;t load more chapters.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => loadMore()}
-                  className={`mt-3 ${primaryButton}`}
-                >
-                  Try again
-                </button>
-              </div>
-            )}
+        {hasMore && <div ref={sentinelRef} aria-hidden className="h-px" />}
 
-            {done && (
-              <div className="relative flex h-10 items-center">
-                <span
-                  aria-hidden
-                  className="absolute -left-[31.5px] flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#fdf1f1] text-rose-500"
-                >
-                  <Heart size={14} />
-                </span>
-                <p className="font-serif text-sm italic text-[#9a7080]">
-                  {order === "oldest"
-                    ? "…to be continued"
-                    : "…and that's where it all began"}
-                </p>
-              </div>
-            )}
+        {loadingMore && items.length > 0 && (
+          <p role="status" className="sr-only">
+            Loading more chapters…
+          </p>
+        )}
+
+        {error && items.length > 0 && (
+          <div role="alert" className="pb-8 text-center">
+            <p className="text-sm text-red-700">
+              Couldn&rsquo;t load more chapters.
+            </p>
+            <button
+              type="button"
+              onClick={() => loadMore()}
+              className={`mt-3 ${primaryButton}`}
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {done && (
+          <div className="flex flex-col items-center gap-3 pb-6 pt-10">
+            <div className="h-10 w-px bg-gradient-to-b from-rose-200 to-transparent" />
+            <Heart size={16} className="text-rose-400" />
+            <p className="font-serif text-sm italic text-[#9a7080]">
+              {order === "oldest"
+                ? "…to be continued"
+                : "…and that's where it all began"}
+            </p>
           </div>
         )}
       </div>
 
-      {unlocked && typeof document !== "undefined" &&
+      {unlocked &&
+        typeof document !== "undefined" &&
         createPortal(
           <button
             type="button"
@@ -340,6 +380,33 @@ export default function StoryFeed() {
           </button>,
           document.body,
         )}
+
+      {readerItem && readerIndex !== null && (
+        <ChapterReader
+          m={readerItem}
+          day={dayFor(readerIndex)}
+          total={total ?? items.length}
+          prevDay={readerIndex > 0 ? dayFor(readerIndex - 1) : null}
+          nextDay={
+            readerIndex < items.length - 1 ? dayFor(readerIndex + 1) : null
+          }
+          nextLoading={hasMore}
+          unlocked={unlocked}
+          lightboxOpen={lightbox !== null}
+          onClose={closeReader}
+          onPrev={prevChapter}
+          onNext={nextChapter}
+          onEdit={() => {
+            setReaderIndex(null);
+            setEditing(readerItem);
+          }}
+          onDelete={() => {
+            setReaderIndex(null);
+            onDelete(readerItem);
+          }}
+          onOpenPhoto={openPhoto}
+        />
+      )}
 
       {editing && (
         <ChapterForm
@@ -364,22 +431,11 @@ export default function StoryFeed() {
   );
 }
 
-function SkeletonCard() {
+function SkeletonTile() {
   return (
     <div
       aria-hidden
-      className="animate-pulse rounded-3xl border border-rose-200/70 bg-gradient-to-br from-rose-50/80 to-pink-100/60 p-2 shadow-[0_20px_60px_-15px_rgba(180,80,110,0.2)]"
-    >
-      <div className="flex items-center gap-3.5 px-2 pb-3 pt-2.5">
-        <div className="h-14 w-14 rounded-2xl bg-rose-100" />
-        <div className="h-3 w-32 rounded-full bg-rose-100/80" />
-      </div>
-      <div className="aspect-[3/4] rounded-2xl bg-rose-100/70" />
-      <div className="space-y-2.5 px-3 pb-3 pt-4">
-        <div className="h-5 w-2/3 rounded-full bg-rose-100" />
-        <div className="h-3 w-full rounded-full bg-rose-100/70" />
-        <div className="h-3 w-5/6 rounded-full bg-rose-100/70" />
-      </div>
-    </div>
+      className="aspect-[3/4] animate-pulse rounded-3xl border border-rose-200/60 bg-gradient-to-br from-rose-100/80 to-pink-100/60"
+    />
   );
 }

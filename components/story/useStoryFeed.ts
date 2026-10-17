@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase, type Moment } from "@/lib/supabase";
 import { extractErrorMessage, type SortOrder } from "./utils";
 
-export const PAGE_SIZE = 6;
+// 12 divides evenly into both the 2- and 3-column wall, so a page never ends mid-row.
+export const PAGE_SIZE = 12;
 
 async function fetchPage(order: SortOrder, from: number, to: number) {
   const asc = order === "oldest";

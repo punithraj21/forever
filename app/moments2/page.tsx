@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function Moments2Page() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col px-5 py-10 sm:py-14">
+    <main className="mx-auto flex min-h-screen max-w-4xl flex-col px-5 py-10 sm:py-14">
       <div className="fade-in mb-10 flex items-center justify-between">
         <Link
           href="/"
