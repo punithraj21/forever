@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase, type Moment } from "@/lib/supabase";
 import ChapterForm from "./ChapterForm";
 import ChapterList from "./ChapterList";
+import LastMetEditor from "./LastMetEditor";
 import GalleryTab from "./GalleryTab";
 import Lightbox from "./Lightbox";
 import PlacesTab from "./PlacesTab";
@@ -16,6 +17,7 @@ import StoryTabs, {
 } from "./StoryTabs";
 import SinceLastMet from "./SinceLastMet";
 import { Plus } from "./icons";
+import { lastMetToISO, useLastMet } from "./useLastMet";
 import { useStoryFeed } from "./useStoryFeed";
 import { useStoryOverview, type OverviewPhoto } from "./useStoryOverview";
 import { extractErrorMessage, formatShortDate, type SortOrder } from "./utils";
@@ -43,6 +45,7 @@ export default function StoryPage() {
 
   const feed = useStoryFeed(order);
   const { overview, refreshOverview } = useStoryOverview();
+  const lastMet = useLastMet();
   const { items, total, hasMore, fetching, error, loadMore, reload } = feed;
 
   useEffect(() => {
@@ -51,6 +54,15 @@ export default function StoryPage() {
     const hash = window.location.hash.replace("#", "");
     if (hash === "photos" || hash === "places") setTab(hash);
   }, []);
+
+  // The counter runs from the later of the latest chapter and the date set by
+  // hand (a meeting we haven't written up yet).
+  const chapterLastAt = overview?.lastDate ?? null;
+  const manualAt = lastMet.date ? lastMetToISO(lastMet.date) : null;
+  const manualWins =
+    manualAt !== null && (chapterLastAt === null || new Date(manualAt) > new Date(chapterLastAt));
+  const lastAt = overview ? (manualWins ? manualAt : chapterLastAt) : null;
+  const lastTitle = manualWins ? null : (overview?.lastTitle ?? null);
 
   const showPlacesTab = unlocked || (overview?.places.length ?? 0) > 0;
   const tabs: TabDef[] = [
@@ -153,8 +165,18 @@ export default function StoryPage() {
 
       <div className="mx-auto mt-10 max-w-2xl">
         <SinceLastMet
-          lastAt={overview?.lastDate ?? null}
-          lastTitle={overview?.lastTitle ?? null}
+          lastAt={lastAt}
+          lastTitle={lastTitle}
+          editor={
+            unlocked && overview ? (
+              <LastMetEditor
+                chapterAt={chapterLastAt}
+                manual={lastMet.date}
+                onSave={lastMet.save}
+                onClear={lastMet.clear}
+              />
+            ) : undefined
+          }
         />
         <StoryNumbers
           moments={overview?.total ?? total}

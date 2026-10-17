@@ -12,9 +12,12 @@ const DAY = 86_400_000;
 export default function SinceLastMet({
   lastAt,
   lastTitle,
+  editor,
 }: {
   lastAt: string | null;
   lastTitle: string | null;
+  /** Owner-only control to set the date by hand, shown under the counter. */
+  editor?: React.ReactNode;
 }) {
   const [now, setNow] = useState<number | null>(null);
 
@@ -78,6 +81,7 @@ export default function SinceLastMet({
       <p className="mt-6 text-center font-serif text-base italic text-[#7a5560]">
         and counting… until we meet again
       </p>
+      {editor}
     </section>
   );
 }
