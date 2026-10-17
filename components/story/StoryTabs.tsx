@@ -12,13 +12,9 @@ export type TabDef = { id: TabId; label: string };
 // ONE SWITCH for where the section tabs live. `true`: a floating dock fixed to
 // the bottom of the screen, always in thumb reach (the current layout). `false`:
 // the previous layout — a sticky bar under the hero. Everything that depends on
-// it (the dock itself, the owner's Add button offset, the page's bottom padding)
-// reads this constant or `DOCK_*` below, so flipping it is the whole revert.
+// it (the dock itself, the panel's scroll margin, the page's bottom padding)
+// reads this constant, so flipping it is the whole revert.
 export const TABS_AT_BOTTOM = true;
-
-// Height of the dock (40px segments on phones, 48px from `sm`, plus track padding and border), plus a gap: the
-// owner's floating Add button sits just above it.
-export const DOCK_CLEARANCE = "4.5rem";
 
 const ICONS = { story: BookOpen, photos: ImageIcon, places: MapPin } as const;
 

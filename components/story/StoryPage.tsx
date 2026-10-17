@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { supabase, type Moment } from "@/lib/supabase";
 import ChapterForm from "./ChapterForm";
 import ChapterList from "./ChapterList";
@@ -10,7 +9,6 @@ import Lightbox from "./Lightbox";
 import PlacesTab from "./PlacesTab";
 import StoryNumbers from "./StoryNumbers";
 import StoryTabs, {
-  DOCK_CLEARANCE,
   SortToggle,
   TABS_AT_BOTTOM,
   type TabDef,
@@ -199,8 +197,20 @@ export default function StoryPage() {
         )}
 
         {tab === "story" && (
-          <div className="mx-auto mb-2 flex max-w-2xl justify-end sm:mb-4">
-            <SortToggle order={order} onOrder={changeOrder} />
+          <div className="mx-auto mb-2 flex max-w-2xl items-center justify-between gap-3 sm:mb-4">
+            {unlocked ? (
+              <button
+                type="button"
+                onClick={() => setEditing("new")}
+                className="inline-flex items-center gap-1.5 rounded-full border border-transparent bg-rose-500 px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.16em] text-white shadow-[0_8px_18px_-8px_rgba(225,29,72,0.55)] transition hover:bg-rose-600 active:scale-95"
+              >
+                <Plus size={13} />
+                Add chapter
+              </button>
+            ) : (
+              <span />
+            )}
+            {(overview?.total ?? total ?? 0) > 1 && <SortToggle order={order} onOrder={changeOrder} />}
           </div>
         )}
 
@@ -239,25 +249,6 @@ export default function StoryPage() {
             </p>
           ))}
       </div>
-
-      {unlocked &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <button
-            type="button"
-            onClick={() => setEditing("new")}
-            className="fixed right-4 z-40 inline-flex h-10 items-center gap-1.5 rounded-full bg-rose-500 px-4 text-[11px] font-medium uppercase tracking-[0.16em] text-white shadow-[0_10px_24px_-8px_rgba(225,29,72,0.55)] transition hover:bg-rose-600 active:scale-95 sm:right-5 sm:h-auto sm:gap-2 sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.22em]"
-            style={{
-              bottom: TABS_AT_BOTTOM
-                ? `calc(${DOCK_CLEARANCE} + env(safe-area-inset-bottom))`
-                : "max(1.25rem, env(safe-area-inset-bottom))",
-            }}
-          >
-            <Plus size={16} />
-            Add chapter
-          </button>,
-          document.body,
-        )}
 
       {editing && (
         <ChapterForm
