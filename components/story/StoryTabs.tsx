@@ -16,9 +16,9 @@ export type TabDef = { id: TabId; label: string };
 // reads this constant or `DOCK_*` below, so flipping it is the whole revert.
 export const TABS_AT_BOTTOM = true;
 
-// Height of the dock (48px segments + track padding/border), plus a gap: the
+// Height of the dock (40px segments on phones, 48px from `sm`, plus track padding and border), plus a gap: the
 // owner's floating Add button sits just above it.
-export const DOCK_CLEARANCE = "5.25rem";
+export const DOCK_CLEARANCE = "4.75rem";
 
 const ICONS = { story: BookOpen, photos: ImageIcon, places: MapPin } as const;
 
@@ -76,11 +76,11 @@ export default function StoryTabs({
             id={`tab-${t.id}`}
             aria-selected={active}
             onClick={() => onTab(t.id)}
-            className={`relative z-10 inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors duration-300 sm:tracking-[0.2em] ${
+            className={`relative z-10 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors duration-300 sm:min-h-12 sm:gap-2 sm:text-xs sm:tracking-[0.2em] ${
               active ? "text-white" : "text-rose-700 hover:text-rose-500"
             }`}
           >
-            <Icon size={18} className="shrink-0" />
+            <Icon size={18} className="h-4 w-4 shrink-0 sm:h-[18px] sm:w-[18px]" />
             {t.label}
           </button>
         );
@@ -93,9 +93,9 @@ export default function StoryTabs({
     return createPortal(
       <div
         className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-4"
-        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
       >
-        <div className="pointer-events-auto mx-auto max-w-md">{switcher}</div>
+        <div className="pointer-events-auto mx-auto max-w-[19rem] sm:max-w-md">{switcher}</div>
       </div>,
       document.body,
     );
