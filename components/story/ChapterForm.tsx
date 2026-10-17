@@ -16,6 +16,7 @@ import {
   type Moment,
 } from "@/lib/supabase";
 import { lockBodyScroll, unlockBodyScroll } from "@/lib/scrollLock";
+import PlacePicker, { type PlaceValue } from "./PlacePicker";
 import { Close, Plus } from "./icons";
 import { extractErrorMessage, toDateInputValue } from "./utils";
 
@@ -28,10 +29,14 @@ const inputClass =
 // this into one `flex items-center overflow-y-auto` div.
 export default function ChapterForm({
   existing,
+  placesEnabled = false,
   onClose,
   onSaved,
 }: {
   existing?: Moment;
+  // Whether supabase/places.sql has been run. Place fields are only shown and
+  // only sent when it has — otherwise the write would fail on missing columns.
+  placesEnabled?: boolean;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -45,6 +50,11 @@ export default function ChapterForm({
   const [note, setNote] = useState(existing?.note ?? "");
   const [keptPaths, setKeptPaths] = useState<string[]>(originalPaths);
   const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [place, setPlace] = useState<PlaceValue>({
+    name: existing?.place_name ?? "",
+    lat: existing?.lat ?? null,
+    lng: existing?.lng ?? null,
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,6 +103,13 @@ export default function ChapterForm({
           0,
           MAX_PHOTOS_PER_CHAPTER,
         ),
+        ...(placesEnabled
+          ? {
+              place_name: place.name.trim() || null,
+              lat: place.lat,
+              lng: place.lng,
+            }
+          : {}),
       };
 
       const res =
@@ -175,6 +192,14 @@ export default function ChapterForm({
                 className={`${inputClass} resize-none leading-relaxed`}
               />
             </Field>
+
+            {placesEnabled && (
+              <PlacePicker
+                value={place}
+                onChange={setPlace}
+                inputClass={inputClass}
+              />
+            )}
 
             <div>
               <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.22em] text-rose-600">

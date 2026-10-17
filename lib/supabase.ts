@@ -18,6 +18,10 @@ export type Moment = {
   note: string | null;
   image_paths: string[];
   created_at: string;
+  // Present only after supabase/places.sql has been run.
+  place_name?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 export const MAX_PHOTOS_PER_CHAPTER = 3;

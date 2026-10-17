@@ -1,5 +1,5 @@
 import Link from "next/link";
-import StoryFeed from "@/components/story/StoryFeed";
+import StoryPage from "@/components/story/StoryPage";
 
 export const metadata = {
   title: "Our Story — Punith & Pallavi",
@@ -21,7 +21,7 @@ export default function Moments2Page() {
         </p>
       </div>
 
-      <StoryFeed />
+      <StoryPage />
 
       <footer className="mt-20 pb-16 text-center text-sm text-[#9a7080]">
         <p className="font-serif italic">

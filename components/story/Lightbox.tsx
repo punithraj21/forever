@@ -14,11 +14,17 @@ export default function Lightbox({
   paths,
   initialIndex,
   alt,
+  captions,
+  action,
   onClose,
 }: {
   paths: string[];
   initialIndex: number;
   alt: string;
+  // Per-photo captions (the gallery spans many chapters); falls back to `alt`.
+  captions?: string[];
+  // Optional button above the caption, e.g. "Read this chapter →".
+  action?: { label: string; onClick: (index: number) => void };
   onClose: () => void;
 }) {
   const total = paths.length;
@@ -104,16 +110,30 @@ export default function Lightbox({
         </>
       )}
 
-      <p
-        className="absolute inset-x-0 bottom-0 z-10 truncate px-6 pt-10 text-center text-xs uppercase tracking-[0.2em] text-white/80"
+      <div
+        className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-3 px-6 pt-12"
         style={{
           paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
-          background: "linear-gradient(to top, rgba(0,0,0,0.6), transparent)",
+          background: "linear-gradient(to top, rgba(0,0,0,0.65), transparent)",
         }}
       >
-        {total > 1 ? `${safeIndex + 1} of ${total} · ` : ""}
-        {alt}
-      </p>
+        {action && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              action.onClick(safeIndex);
+            }}
+            className="rounded-full border border-white/30 bg-white/15 px-5 py-2.5 text-xs font-medium uppercase tracking-[0.22em] text-white backdrop-blur-sm transition hover:bg-white/25"
+          >
+            {action.label}
+          </button>
+        )}
+        <p className="max-w-full truncate text-center text-xs uppercase tracking-[0.2em] text-white/80">
+          {total > 1 ? `${safeIndex + 1} of ${total} · ` : ""}
+          {captions?.[safeIndex] ?? alt}
+        </p>
+      </div>
     </div>,
     document.body,
   );

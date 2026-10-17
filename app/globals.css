@@ -111,3 +111,88 @@ body {
     animation: none;
   }
 }
+
+/* Places map (components/story/PlacesMap.tsx): rose heart pins + popups, styled
+   to match the cards. Leaflet's own CSS is imported by the component. */
+.leaflet-container {
+  font-family: inherit;
+}
+
+/* Soften OpenStreetMap's default colours toward the cream/rose palette. Only
+   the tile pane is filtered, so pins and popups keep their true colours. */
+.story-map .leaflet-tile-pane {
+  filter: saturate(0.55) sepia(0.3) hue-rotate(-18deg) brightness(1.06)
+    contrast(0.92);
+}
+
+.story-pin-wrap {
+  background: none;
+  border: none;
+}
+
+.story-pin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: linear-gradient(135deg, #fb7185, #e11d48);
+  border: 3px solid #fff;
+  box-shadow: 0 8px 18px -4px rgba(180, 80, 110, 0.55);
+}
+
+.story-pin svg {
+  transform: rotate(45deg);
+}
+
+.story-pin-count {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  transform: rotate(45deg);
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #fff;
+  color: #be123c;
+  font: 600 11px/18px Inter, system-ui, sans-serif;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(254, 205, 211, 0.8);
+  box-shadow: 0 20px 50px -15px rgba(180, 80, 110, 0.45);
+}
+
+.leaflet-popup-content {
+  margin: 14px 16px;
+}
+
+.story-popup-place {
+  margin: 0 0 6px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.3rem;
+  line-height: 1.15;
+  color: #3a2030;
+}
+
+.story-popup-link {
+  display: block;
+  width: 100%;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: #be123c;
+  cursor: pointer;
+}
+
+.story-popup-link:hover {
+  color: #9f1239;
+}

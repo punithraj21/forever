@@ -4,15 +4,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase, type Moment } from "@/lib/supabase";
 import { extractErrorMessage, type SortOrder } from "./utils";
 
-// 12 divides evenly into both the 2- and 3-column wall, so a page never ends mid-row.
-export const PAGE_SIZE = 12;
+// Long-form chapters are tall (full note + photos), so pages stay small.
+export const PAGE_SIZE = 6;
 
 async function fetchPage(order: SortOrder, from: number, to: number) {
   const asc = order === "oldest";
   // A chapter's occurred_at is pinned to noon of its day, so same-day chapters
   // tie. The created_at / id tie-breakers keep offset pagination stable (no
-  // dupes or gaps between pages) and, flipped together with occurred_at, keep
-  // "Day N" identical in both sort directions.
+  // dupes or gaps between pages), and flipped together with occurred_at they
+  // make newest-first an exact mirror of oldest-first.
   const { data, count, error } = await supabase
     .from("moments")
     .select("*", { count: "exact" })
@@ -22,16 +22,6 @@ async function fetchPage(order: SortOrder, from: number, to: number) {
     .range(from, to);
   if (error) throw error;
   return { rows: (data ?? []) as Moment[], count: count ?? 0 };
-}
-
-async function fetchFirstDate(): Promise<string | null> {
-  const { data, error } = await supabase
-    .from("moments")
-    .select("occurred_at")
-    .order("occurred_at", { ascending: true })
-    .limit(1);
-  if (error) throw error;
-  return data?.[0]?.occurred_at ?? null;
 }
 
 // PostgREST answers 416 / PGRST103 when the requested offset is past the end
@@ -53,7 +43,6 @@ function isRangeError(err: unknown): boolean {
 export function useStoryFeed(order: SortOrder) {
   const [items, setItems] = useState<Moment[]>([]);
   const [total, setTotal] = useState<number | null>(null);
-  const [firstDate, setFirstDate] = useState<string | null>(null);
   const [fetching, setFetching] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,14 +95,10 @@ export function useStoryFeed(order: SortOrder) {
     setLoadingMore(false);
     try {
       const size = Math.max(itemsRef.current.length, PAGE_SIZE);
-      const [{ rows, count }, first] = await Promise.all([
-        fetchPage(order, 0, size - 1),
-        fetchFirstDate().catch(() => null),
-      ]);
+      const { rows, count } = await fetchPage(order, 0, size - 1);
       if (mine !== epoch.current) return;
       commit(rows);
       setTotal(count);
-      setFirstDate(first);
       setError(null);
     } catch (err) {
       if (mine !== epoch.current) return;
@@ -143,18 +128,11 @@ export function useStoryFeed(order: SortOrder) {
     loadMore();
   }, [order, commit, loadMore]);
 
-  useEffect(() => {
-    fetchFirstDate()
-      .then(setFirstDate)
-      .catch(() => {});
-  }, []);
-
   const hasMore = total !== null && items.length < total;
 
   return {
     items,
     total,
-    firstDate,
     fetching,
     loadingMore,
     error,
