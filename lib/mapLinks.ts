@@ -62,15 +62,36 @@ export function placeTextFromMapsUrl(url: string): string | null {
   return null;
 }
 
+// "Temple, TOWN, near the school, Village, Town, State 563131, India" ->
+// ["Temple", "Village", "Town", "State", "India"]: the address segments worth
+// geocoding (postal codes, "TOWN" placeholders and "near …" hints dropped).
+function addressParts(text: string): string[] {
+  return text
+    .split(",")
+    .map((s) => s.trim().replace(/\s+\d{5,6}$/, "")) // "Karnataka 563131" -> "Karnataka"
+    .filter((s) => s && !/^(town|village|city)$/i.test(s) && !/^near\b/i.test(s));
+}
+
+// The place's own name, on its own. Google often labels a place with a
+// different village than OpenStreetMap does ("Boyakonda Gangamma Temple,
+// Diguvapalle" — 110 km from the temple's real spot), so the full address can
+// fail or land on the wrong town while the bare name finds the temple itself.
+// A bare name can also match a namesake elsewhere, so the caller must check the
+// hit is in `state`.
+export function nameQuery(text: string): { query: string; state: string | null } | null {
+  const parts = addressParts(text);
+  if (parts.length < 3) return null; // geocodeQueries already tries the whole text
+  const last = parts[parts.length - 1];
+  const state = /^india$/i.test(last) ? parts[parts.length - 2] : last;
+  return { query: parts[0], state: state || null };
+}
+
 // Geocoder queries, most specific first. A share link's address reads
 // "Temple, TOWN, near the school, Village, Town, State 563131, India"; the
 // first segment is the name and the tail is the locality. Never goes coarser
 // than town level — a state-level pin would be worse than no pin.
 export function geocodeQueries(text: string): string[] {
-  const parts = text
-    .split(",")
-    .map((s) => s.trim().replace(/\s+\d{5,6}$/, "")) // "Karnataka 563131" -> "Karnataka"
-    .filter((s) => s && !/^(town|village|city)$/i.test(s) && !/^near\b/i.test(s));
+  const parts = addressParts(text);
   const out: string[] = [];
   const add = (q: string) => {
     if (q && !out.includes(q)) out.push(q);

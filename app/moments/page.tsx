@@ -1,5 +1,5 @@
 import Link from "next/link";
-import OurStorySection from "@/components/OurStorySection";
+import StoryPage from "@/components/story/StoryPage";
 
 export const metadata = {
   title: "Our Story — Punith & Pallavi",
@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function MomentsPage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col px-5 py-10 sm:py-14">
+    <main className="mx-auto flex min-h-screen max-w-4xl flex-col px-5 py-10 sm:py-14">
       <div className="fade-in mb-10 flex items-center justify-between">
         <Link
           href="/"
@@ -21,9 +21,9 @@ export default function MomentsPage() {
         </p>
       </div>
 
-      <OurStorySection />
+      <StoryPage />
 
-      <footer className="fade-in mt-20 text-center text-sm text-[#9a7080]">
+      <footer className="mt-20 pb-16 text-center text-sm text-[#9a7080]">
         <p className="font-serif italic">
           Every second brings us closer, Punith &amp; Pallavi.
         </p>

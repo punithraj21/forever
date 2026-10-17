@@ -4,6 +4,7 @@ import {
   geocodeQueries,
   isAllowedMapsHost,
   isShortLinkHost,
+  nameQuery,
   parseCoords,
   placeNameFromText,
   placeTextFromMapsUrl,
@@ -84,6 +85,7 @@ async function geocode(query: string) {
   return {
     lat: Number(hit.lat),
     lng: Number(hit.lon),
+    label: hit.display_name,
     // A town / district / road is only "the area"; a temple, hall or shop is
     // the place itself.
     isArea: ["place", "boundary", "highway", "waterway", "landuse"].includes(hit.category ?? ""),
@@ -118,6 +120,23 @@ export async function GET(req: Request) {
     }
 
     // Nominatim asks for at most one request per second.
+    // First the bare name, accepted only if OpenStreetMap puts it in the state
+    // Google names (a namesake in another state is not our place).
+    const byName = nameQuery(text);
+    if (byName) {
+      const hit = await geocode(byName.query);
+      if (hit && (!byName.state || hit.label.toLowerCase().includes(byName.state.toLowerCase()))) {
+        return json({
+          lat: hit.lat,
+          lng: hit.lng,
+          name,
+          approximate: hit.isArea,
+          matched: byName.query,
+        });
+      }
+      await sleep(1100);
+    }
+
     const queries = geocodeQueries(text);
     for (let i = 0; i < queries.length; i++) {
       if (i > 0) await sleep(1100);

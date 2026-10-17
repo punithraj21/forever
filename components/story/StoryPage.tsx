@@ -43,7 +43,7 @@ export default function StoryPage() {
 
   useEffect(() => {
     setUnlocked(localStorage.getItem(UNLOCK_KEY) === "true");
-    // Deep links: /moments2#photos, /moments2#places
+    // Deep links: /moments#photos, /moments#places
     const hash = window.location.hash.replace("#", "");
     if (hash === "photos" || hash === "places") setTab(hash);
   }, []);
