@@ -17,7 +17,6 @@ import StoryTabs, {
 } from "./StoryTabs";
 import SinceLastMet from "./SinceLastMet";
 import { Plus } from "./icons";
-import { lastMetToISO, useLastMet } from "./useLastMet";
 import { useStoryFeed } from "./useStoryFeed";
 import { useStoryOverview, type OverviewPhoto } from "./useStoryOverview";
 import { extractErrorMessage, formatShortDate, type SortOrder } from "./utils";
@@ -45,7 +44,6 @@ export default function StoryPage() {
 
   const feed = useStoryFeed(order);
   const { overview, refreshOverview } = useStoryOverview();
-  const lastMet = useLastMet();
   const { items, total, hasMore, fetching, error, loadMore, reload } = feed;
 
   useEffect(() => {
@@ -54,15 +52,6 @@ export default function StoryPage() {
     const hash = window.location.hash.replace("#", "");
     if (hash === "photos" || hash === "places") setTab(hash);
   }, []);
-
-  // The counter runs from the later of the latest chapter and the date set by
-  // hand (a meeting we haven't written up yet).
-  const chapterLastAt = overview?.lastDate ?? null;
-  const manualAt = lastMet.date ? lastMetToISO(lastMet.date) : null;
-  const manualWins =
-    manualAt !== null && (chapterLastAt === null || new Date(manualAt) > new Date(chapterLastAt));
-  const lastAt = overview ? (manualWins ? manualAt : chapterLastAt) : null;
-  const lastTitle = manualWins ? null : (overview?.lastTitle ?? null);
 
   const showPlacesTab = unlocked || (overview?.places.length ?? 0) > 0;
   const tabs: TabDef[] = [
@@ -125,6 +114,27 @@ export default function StoryPage() {
     }
   };
 
+  // "Update last met": a placeholder chapter on that day, so the counter, the
+  // gaps and the numbers all follow from the one source of truth — the chapters.
+  const addMeeting = useCallback(
+    async (date: string): Promise<Moment> => {
+      const { data, error } = await supabase
+        .from("moments")
+        .insert({
+          occurred_at: new Date(`${date}T12:00:00`).toISOString(),
+          title: "We met",
+          note: null,
+          image_paths: [],
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      await Promise.all([reload(), refreshOverview()]);
+      return data as Moment;
+    },
+    [reload, refreshOverview],
+  );
+
   const openChapterPhotos = useCallback(
     (paths: string[], index: number, alt: string) =>
       setLightbox({ paths, index, alt }),
@@ -165,15 +175,14 @@ export default function StoryPage() {
 
       <div className="mx-auto mt-10 max-w-2xl">
         <SinceLastMet
-          lastAt={lastAt}
-          lastTitle={lastTitle}
+          lastAt={overview?.lastDate ?? null}
+          lastTitle={overview?.lastTitle ?? null}
           editor={
             unlocked && overview ? (
               <LastMetEditor
-                chapterAt={chapterLastAt}
-                manual={lastMet.date}
-                onSave={lastMet.save}
-                onClear={lastMet.clear}
+                chapterAt={overview.lastDate}
+                onAdd={addMeeting}
+                onWrite={(m) => setEditing(m)}
               />
             ) : undefined
           }
