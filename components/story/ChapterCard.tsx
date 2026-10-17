@@ -29,23 +29,39 @@ export default function ChapterCard({
 
   return (
     <article
-      className={`relative rounded-3xl border border-white bg-white/80 p-2 shadow-[0_12px_32px_-14px_rgba(180,80,110,0.3)] transition ${
+      className={`relative rounded-3xl border border-rose-200/70 bg-gradient-to-br from-rose-50/80 to-pink-100/60 p-2 shadow-[0_20px_60px_-15px_rgba(180,80,110,0.25)] transition ${
         deleting ? "pointer-events-none opacity-50" : ""
       }`}
     >
-      <div className="flex items-start justify-between gap-3 px-3 pb-2.5 pt-2">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-500">
-            Day {day}
+      {/* Same top accent bar as the countdown cards */}
+      <div
+        aria-hidden
+        className="absolute inset-x-8 top-0 h-[2px] rounded-b-full bg-gradient-to-r from-rose-300 via-pink-300 to-rose-300 opacity-70"
+      />
+
+      <div className="flex items-center justify-between gap-3 px-2 pb-3 pt-2.5">
+        <div className="flex min-w-0 items-center gap-3.5">
+          {/* The countdown tiles' look: serif numeral over a tiny tracked label.
+              DOM order is label → numeral (reads "Day 7"); flex-col-reverse
+              puts the numeral on top. */}
+          <div className="flex h-14 w-14 shrink-0 flex-col-reverse items-center justify-center rounded-2xl border border-rose-200/60 bg-white/70">
+            <span className="mt-1 text-[9px] font-medium uppercase tracking-[0.18em] text-rose-500">
+              Day
+            </span>
+            <span className="font-serif text-3xl font-semibold leading-none tabular-nums text-rose-700">
+              {day}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm text-[#7a5560]">
+              {formatCardDate(m.occurred_at)}
+            </p>
             {day === 1 && (
-              <span className="ml-1.5 font-serif text-[13px] font-normal normal-case italic tracking-normal text-[#9a7080]">
-                · where it began
-              </span>
+              <p className="font-serif text-sm italic text-[#9a7080]">
+                where it began
+              </p>
             )}
-          </p>
-          <p className="mt-0.5 text-xs text-[#9a7080]">
-            {formatCardDate(m.occurred_at)}
-          </p>
+          </div>
         </div>
         {unlocked && <CardMenu onEdit={onEdit} onDelete={onDelete} />}
       </div>
@@ -59,7 +75,7 @@ export default function ChapterCard({
       )}
 
       {(m.title || m.note) && (
-        <div className={`px-3 pb-3 ${hasPhotos ? "pt-4" : "pt-1"}`}>
+        <div className={`px-2 pb-3 ${hasPhotos ? "pt-4" : "pt-1"}`}>
           {m.title && (
             <h3 className="font-serif text-2xl font-medium leading-tight text-[#3a2030]">
               {m.title}
@@ -120,7 +136,7 @@ function ExpandableNote({
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-500 transition hover:text-rose-700"
+          className="mt-2 text-xs font-medium uppercase tracking-[0.18em] text-rose-500 transition hover:text-rose-700"
         >
           {expanded ? "Show less" : "Read more"}
         </button>
@@ -174,7 +190,7 @@ function CardMenu({
         aria-label="Chapter options"
         aria-haspopup="menu"
         aria-expanded={open}
-        className="-mr-1 -mt-1 rounded-full p-2 text-[#9a7080] transition hover:bg-rose-50 hover:text-rose-600"
+        className="rounded-full p-2 text-[#9a7080] transition hover:bg-white/70 hover:text-rose-600"
       >
         <Dots />
       </button>

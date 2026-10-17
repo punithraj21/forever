@@ -18,6 +18,10 @@ import {
 
 const UNLOCK_KEY = "moments_unlocked";
 
+// Same primary button as the home page's "Share blessing".
+const primaryButton =
+  "rounded-full bg-rose-500 px-6 py-3 text-xs font-medium uppercase tracking-[0.22em] text-white shadow-sm transition hover:bg-rose-600";
+
 type Entry = { m: Moment; day: number; index: number };
 type Group = { key: string; label: string; entries: Entry[] };
 
@@ -136,11 +140,12 @@ export default function StoryFeed() {
         <p className="mt-3 font-serif text-lg italic text-[#7a5560]">
           from the day we met
         </p>
+        <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-rose-300 to-transparent" />
 
         <div className="mt-6 flex h-9 items-center justify-center">
           {firstDate && total ? (
-            <p className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-white/70 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#9a7080]">
-              <Heart size={12} className="text-rose-400" />
+            <p className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-rose-700">
+              <Heart size={12} className="text-rose-500" />
               Since {formatShortDate(firstDate)}
               <span aria-hidden>·</span>
               {total} {total === 1 ? "chapter" : "chapters"}
@@ -152,7 +157,7 @@ export default function StoryFeed() {
           <div
             role="group"
             aria-label="Sort chapters"
-            className="mx-auto mt-5 inline-flex rounded-full border border-rose-200 bg-white/70 p-1 shadow-sm"
+            className="mx-auto mt-5 inline-flex rounded-full border border-rose-200/60 bg-white/70 p-1 shadow-sm"
           >
             {(["oldest", "newest"] as const).map((o) => (
               <button
@@ -160,10 +165,10 @@ export default function StoryFeed() {
                 type="button"
                 onClick={() => changeOrder(o)}
                 aria-pressed={order === o}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+                className={`rounded-full border px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] transition ${
                   order === o
-                    ? "bg-rose-500 text-white shadow"
-                    : "text-rose-700 hover:bg-rose-50"
+                    ? "border-rose-200 bg-rose-100 text-rose-700"
+                    : "border-transparent text-[#9a7080] hover:text-rose-600"
                 }`}
               >
                 {o === "oldest" ? "Oldest first" : "Newest first"}
@@ -205,7 +210,7 @@ export default function StoryFeed() {
             <button
               type="button"
               onClick={() => loadMore()}
-              className="mt-4 rounded-full bg-rose-500 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-rose-600"
+              className={`mt-4 ${primaryButton}`}
             >
               Try again
             </button>
@@ -249,7 +254,7 @@ export default function StoryFeed() {
                     aria-hidden
                     className="absolute -left-[31.5px] h-[18px] w-[18px] rounded-full border-[3px] border-white bg-rose-500 shadow"
                   />
-                  <span className="rounded-full border border-rose-200 bg-white/95 px-4 py-1 font-serif text-base italic text-[#7a3a52] shadow-sm backdrop-blur-md">
+                  <span className="rounded-full border border-rose-200 bg-rose-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-rose-700 shadow-sm">
                     {group.label}
                   </span>
                 </h2>
@@ -262,7 +267,7 @@ export default function StoryFeed() {
                     >
                       <span
                         aria-hidden
-                        className="absolute -left-[28.5px] top-[22px] h-3 w-3 rounded-full border-2 border-white bg-rose-300 shadow-sm"
+                        className="absolute -left-[28.5px] top-[40px] h-3 w-3 rounded-full border-2 border-white bg-rose-300 shadow-sm"
                       />
                       <ChapterCard
                         m={m}
@@ -296,7 +301,7 @@ export default function StoryFeed() {
                 <button
                   type="button"
                   onClick={() => loadMore()}
-                  className="mt-3 rounded-full bg-rose-500 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-rose-600"
+                  className={`mt-3 ${primaryButton}`}
                 >
                   Try again
                 </button>
@@ -327,7 +332,7 @@ export default function StoryFeed() {
           <button
             type="button"
             onClick={() => setEditing("new")}
-            className="fixed right-5 z-30 inline-flex items-center gap-2 rounded-full bg-rose-500 px-5 py-3.5 text-sm font-medium text-white shadow-[0_12px_28px_-8px_rgba(225,29,72,0.55)] transition hover:bg-rose-600 active:scale-95"
+            className="fixed right-5 z-30 inline-flex items-center gap-2 rounded-full bg-rose-500 px-6 py-3.5 text-xs font-medium uppercase tracking-[0.22em] text-white shadow-[0_12px_28px_-8px_rgba(225,29,72,0.55)] transition hover:bg-rose-600 active:scale-95"
             style={{ bottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
           >
             <Plus size={18} />
@@ -363,13 +368,13 @@ function SkeletonCard() {
   return (
     <div
       aria-hidden
-      className="animate-pulse rounded-3xl border border-white bg-white/70 p-2 shadow-[0_12px_32px_-14px_rgba(180,80,110,0.2)]"
+      className="animate-pulse rounded-3xl border border-rose-200/70 bg-gradient-to-br from-rose-50/80 to-pink-100/60 p-2 shadow-[0_20px_60px_-15px_rgba(180,80,110,0.2)]"
     >
-      <div className="space-y-2 px-3 pb-3 pt-3">
-        <div className="h-2.5 w-16 rounded-full bg-rose-100" />
-        <div className="h-2 w-28 rounded-full bg-rose-100/70" />
+      <div className="flex items-center gap-3.5 px-2 pb-3 pt-2.5">
+        <div className="h-14 w-14 rounded-2xl bg-rose-100" />
+        <div className="h-3 w-32 rounded-full bg-rose-100/80" />
       </div>
-      <div className="aspect-[4/5] rounded-2xl bg-rose-100/70" />
+      <div className="aspect-[3/4] rounded-2xl bg-rose-100/70" />
       <div className="space-y-2.5 px-3 pb-3 pt-4">
         <div className="h-5 w-2/3 rounded-full bg-rose-100" />
         <div className="h-3 w-full rounded-full bg-rose-100/70" />
