@@ -118,6 +118,13 @@ body {
   font-family: inherit;
 }
 
+/* Leaflet stacks its panes and controls at z-index 400–1000. Without its own
+   stacking context those beat the fixed bottom tab dock (z-30) and the map
+   draws over the tabs. Isolating the map keeps all of that inside the map. */
+.story-map {
+  isolation: isolate;
+}
+
 /* Soften OpenStreetMap's default colours toward the cream/rose palette. Only
    the tile pane is filtered, so pins and popups keep their true colours. */
 .story-map .leaflet-tile-pane {
