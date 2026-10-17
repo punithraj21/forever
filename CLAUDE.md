@@ -165,7 +165,7 @@ The form modal also uses the scroll-overlay pattern for short viewports:
 
 - **Fixed the Places map drawing over the bottom tab dock.** Reproduced first (with the map's bottom edge under the dock, `elementFromPoint` on the Photos/Places tabs returned Leaflet's attribution control), then isolated the map's stacking context with `.story-map { isolation: isolate }`; all three tabs and the Add button now sit above it.
 
-- **Made the bottom tab dock compact on phones** (Punith: "feels too big"): 40px segments in a `19rem`-wide pill (was 48px / full width); `sm`+ keeps the roomier size. `DOCK_CLEARANCE` (Add button offset) reduced to match.
+- **Made the bottom tab dock compact on phones** (Punith: "feels too big"): 40px segments in a `19rem`-wide pill (was 48px / full width); `sm`+ keeps the roomier size. The owner's "Add chapter" button is compact too (40px tall, smaller type, `right-4`; full size from `sm`), and `DOCK_CLEARANCE` (its offset above the dock) reduced to match.
 
 ## Update protocol for future sessions
 

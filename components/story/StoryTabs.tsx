@@ -18,7 +18,7 @@ export const TABS_AT_BOTTOM = true;
 
 // Height of the dock (40px segments on phones, 48px from `sm`, plus track padding and border), plus a gap: the
 // owner's floating Add button sits just above it.
-export const DOCK_CLEARANCE = "4.75rem";
+export const DOCK_CLEARANCE = "4.5rem";
 
 const ICONS = { story: BookOpen, photos: ImageIcon, places: MapPin } as const;
 

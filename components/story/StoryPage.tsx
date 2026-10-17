@@ -246,14 +246,14 @@ export default function StoryPage() {
           <button
             type="button"
             onClick={() => setEditing("new")}
-            className="fixed right-5 z-40 inline-flex items-center gap-2 rounded-full bg-rose-500 px-6 py-3.5 text-xs font-medium uppercase tracking-[0.22em] text-white shadow-[0_12px_28px_-8px_rgba(225,29,72,0.55)] transition hover:bg-rose-600 active:scale-95"
+            className="fixed right-4 z-40 inline-flex h-10 items-center gap-1.5 rounded-full bg-rose-500 px-4 text-[11px] font-medium uppercase tracking-[0.16em] text-white shadow-[0_10px_24px_-8px_rgba(225,29,72,0.55)] transition hover:bg-rose-600 active:scale-95 sm:right-5 sm:h-auto sm:gap-2 sm:px-6 sm:py-3.5 sm:text-xs sm:tracking-[0.22em]"
             style={{
               bottom: TABS_AT_BOTTOM
                 ? `calc(${DOCK_CLEARANCE} + env(safe-area-inset-bottom))`
                 : "max(1.25rem, env(safe-area-inset-bottom))",
             }}
           >
-            <Plus size={18} />
+            <Plus size={16} />
             Add chapter
           </button>,
           document.body,
