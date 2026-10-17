@@ -26,10 +26,13 @@ const PATTERN = [
 export default function GalleryTab({
   photos,
   order,
+  sort,
   onOpen,
 }: {
   photos: OverviewPhoto[];
   order: SortOrder;
+  /** The oldest/newest toggle, shown under the heading. */
+  sort?: React.ReactNode;
   onOpen: (index: number, list: OverviewPhoto[]) => void;
 }) {
   const list = useMemo(
@@ -69,6 +72,8 @@ export default function GalleryTab({
         title="Our Photos"
         subtitle="tap any one to see it big"
       />
+
+      {sort && list.length > 1 && <div className="-mt-4 mb-4 flex justify-end">{sort}</div>}
 
       {list.length === 0 ? (
         <p className="text-center font-serif text-lg italic text-[#7a5560]">

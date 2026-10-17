@@ -9,7 +9,7 @@ import GalleryTab from "./GalleryTab";
 import Lightbox from "./Lightbox";
 import PlacesTab from "./PlacesTab";
 import StoryNumbers from "./StoryNumbers";
-import StoryTabs, { type TabDef, type TabId } from "./StoryTabs";
+import StoryTabs, { SortToggle, type TabDef, type TabId } from "./StoryTabs";
 import SinceLastMet from "./SinceLastMet";
 import { Plus } from "./icons";
 import { useStoryFeed } from "./useStoryFeed";
@@ -166,8 +166,6 @@ export default function StoryPage() {
           tabs={tabs}
           tab={tab}
           onTab={changeTab}
-          order={order}
-          onOrder={changeOrder}
         />
       </div>
 
@@ -197,6 +195,12 @@ export default function StoryPage() {
         )}
 
         {tab === "story" && (
+          <div className="mx-auto mb-2 flex max-w-2xl justify-end sm:mb-4">
+            <SortToggle order={order} onOrder={changeOrder} />
+          </div>
+        )}
+
+        {tab === "story" && (
           <ChapterList
             feed={feed}
             order={order}
@@ -210,7 +214,12 @@ export default function StoryPage() {
 
         {tab === "photos" &&
           (overview ? (
-            <GalleryTab photos={overview.photos} order={order} onOpen={openGallery} />
+            <GalleryTab
+              photos={overview.photos}
+              order={order}
+              sort={<SortToggle order={order} onOrder={changeOrder} />}
+              onOpen={openGallery}
+            />
           ) : (
             <p role="status" className="text-center text-sm italic text-[#9a7080]">
               Gathering photos…

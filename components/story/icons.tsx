@@ -105,3 +105,34 @@ export const Layers = (p: IconProps) => (
     <path d="M2 12l10 5 10-5" />
   </Svg>
 );
+
+export const BookOpen = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z" />
+    <path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z" />
+  </Svg>
+);
+
+export const ImageIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="3" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <path d="m21 15-4.5-4.5L6 21" />
+  </Svg>
+);
+
+export const MapPin = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </Svg>
+);
+
+export const SortArrows = (p: IconProps) => (
+  <Svg {...p} strokeWidth={2.4}>
+    <path d="m3 8 4-4 4 4" />
+    <path d="M7 4v16" />
+    <path d="m21 16-4 4-4-4" />
+    <path d="M17 20V4" />
+  </Svg>
+);
