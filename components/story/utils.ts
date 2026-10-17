@@ -17,6 +17,21 @@ export function formatShortDate(iso: string): string {
   });
 }
 
+export function formatTileDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function formatMonthName(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { month: "long" });
+}
+
+export function formatYear(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { year: "numeric" });
+}
+
 export function formatMonthYear(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "long",
