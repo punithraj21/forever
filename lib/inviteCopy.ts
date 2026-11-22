@@ -84,7 +84,7 @@ export const INVITE_COPY = {
       copied: "Link copied!",
       native: "Share",
       message:
-        "You're invited to Punith & Pallavi's wedding 💐\nReception: Wed, Feb 10, 2027 · 7 PM onwards\nMuhurtha: Thu, Feb 11, 2027 · 11:30 AM\nNS Convention Hall, Doddaballapur",
+        "We are inviting you to Punith & Pallavi's wedding 💐\nReception: Wed, Feb 10, 2027 · 7 PM onwards\nMuhurtha: Thu, Feb 11, 2027 · 11:30 AM\nNS Convention Hall, Doddaballapur",
     },
     footer: "With love, Punith & Pallavi",
   },
