@@ -22,7 +22,7 @@ const PLAQUE_TITLE: Record<Lang, string> = {
 const OTHER: Record<Lang, string> = { en: "/kn/invite2", kn: "/invite2" };
 
 const PLAQUE_PATH =
-  "M-118 -34 Q-118 -52 -96 -50 L-40 -50 Q-30 -62 0 -62 Q30 -62 40 -50 L96 -50 Q118 -52 118 -34 L118 34 Q118 52 96 50 L40 50 Q30 62 0 62 Q-30 62 -40 50 L-96 50 Q-118 52 -118 34 Z";
+  "M-118 -24 Q-118 -40 -96 -38 L-40 -38 Q-30 -48 0 -48 Q30 -48 40 -38 L96 -38 Q118 -40 118 -24 L118 24 Q118 40 96 38 L40 38 Q30 48 0 48 Q-30 48 -40 38 L-96 38 Q-118 40 -118 24 Z";
 
 /** Ornate gold-framed parchment plaque; the text is HTML laid over it so
  *  Kannada gets the page's Kannada fonts. */
@@ -31,7 +31,7 @@ function Plaque({ top, title }: { top: string; title: string }) {
     <div className="relative mx-auto w-[78%] max-w-[360px]">
       <svg
         aria-hidden
-        viewBox="-132 -92 264 166"
+        viewBox="-132 -74 264 130"
         className="block w-full drop-shadow-[0_8px_10px_rgba(90,42,16,0.35)]"
       >
         <defs>
@@ -67,7 +67,7 @@ function Plaque({ top, title }: { top: string; title: string }) {
         ].map(([sx, sy]) => (
           <g
             key={`${sx}${sy}`}
-            transform={`translate(${sx * 112} ${sy * 40}) scale(${sx} ${sy})`}
+            transform={`translate(${sx * 112} ${sy * 28}) scale(${sx} ${sy})`}
           >
             <path
               d="M0 0 C 10 -14 24 -12 22 -2 C 20 6 10 4 12 -2"
@@ -86,10 +86,10 @@ function Plaque({ top, title }: { top: string; title: string }) {
             <circle cx={-24} cy={-3} r={2.6} fill="#d9a441" />
           </g>
         ))}
-        <path d="M-14 -62 L0 -78 L14 -62 Z" fill="url(#plq-gold)" />
-        <circle cx={0} cy={-81} r={4} fill="#c8353f" />
+        <path d="M-14 -48 L0 -64 L14 -48 Z" fill="url(#plq-gold)" />
+        <circle cx={0} cy={-67} r={4} fill="#c8353f" />
       </svg>
-      <div className="absolute inset-x-0 top-[31%] text-center">
+      <div className="absolute inset-x-0 top-[57%] -translate-y-1/2 text-center">
         <p className="font-serif text-[0.95rem] leading-tight text-[#7a4a22] sm:text-base">
           {top}
         </p>
