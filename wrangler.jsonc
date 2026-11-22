@@ -11,6 +11,11 @@
       "pattern": "forever.devshark.site",
       "zone_name": "devshark.site",
       "custom_domain": true
+    },
+    {
+      "pattern": "wedding.devshark.site",
+      "zone_name": "devshark.site",
+      "custom_domain": true
     }
   ],
   "assets": {
