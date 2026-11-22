@@ -17,7 +17,7 @@ import ShareButtons from "@/components/ShareButtons";
 import WeddingBackdrop, { GoldOrnament } from "@/components/WeddingBackdrop";
 import { VENUE_MAPS_URL } from "@/lib/calendar";
 import type { Lang } from "@/lib/i18n";
-import { INVITE_COPY } from "@/lib/inviteCopy";
+import { INVITE_COPY, SHARE_SHORT } from "@/lib/inviteCopy";
 
 /** Small gold corner flourish; rotated for each corner of the sheet. */
 function Corner({ className }: { className: string }) {
@@ -156,7 +156,7 @@ export default function InvitePage({ lang }: { lang: Lang }) {
             {t.share.heading}
           </h2>
           <p className="mb-6 mt-1.5 text-sm text-[#7a5560]">{t.share.note}</p>
-          <ShareButtons labels={t.share} />
+          <ShareButtons labels={t.share} short={SHARE_SHORT[lang]} />
         </section>
       </main>
     </div>

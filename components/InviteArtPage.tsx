@@ -12,7 +12,7 @@ import ShareButtons from "@/components/ShareButtons";
 import { GoldOrnament } from "@/components/WeddingBackdrop";
 import { VENUE_MAPS_URL } from "@/lib/calendar";
 import type { Lang } from "@/lib/i18n";
-import { INVITE_COPY } from "@/lib/inviteCopy";
+import { INVITE_COPY, SHARE_SHORT } from "@/lib/inviteCopy";
 
 const ART = "/invite-art.jpg";
 const PLAQUE_TITLE: Record<Lang, string> = {
@@ -20,20 +20,6 @@ const PLAQUE_TITLE: Record<Lang, string> = {
   kn: "ವಿವಾಹ ಆಹ್ವಾನ",
 };
 const OTHER: Record<Lang, string> = { en: "/kn/invite2", kn: "/invite2" };
-// short captions under the round share buttons
-const SHARE_SHORT: Record<
-  Lang,
-  { whatsapp: string; native: string; copy: string; copied: string }
-> = {
-  en: { whatsapp: "WhatsApp", native: "Share", copy: "Copy", copied: "Copied!" },
-  kn: {
-    whatsapp: "WhatsApp",
-    native: "ಹಂಚಿ",
-    copy: "ನಕಲಿಸಿ",
-    copied: "ನಕಲಿಸಲಾಗಿದೆ!",
-  },
-};
-
 const PLAQUE_PATH =
   "M-118 -24 Q-118 -40 -96 -38 L-40 -38 Q-30 -48 0 -48 Q30 -48 40 -38 L96 -38 Q118 -40 118 -24 L118 24 Q118 40 96 38 L40 38 Q30 48 0 48 Q-30 48 -40 38 L-96 38 Q-118 40 -118 24 Z";
 

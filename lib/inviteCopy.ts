@@ -150,3 +150,17 @@ export const INVITE_COPY = {
     footer: "ಪ್ರೀತಿಯಿಂದ, ಪುನೀತ್ & ಪಲ್ಲವಿ",
   },
 } satisfies Record<Lang, InviteCopy>;
+
+/** Short captions under the round "medallion" share buttons (ShareButtons `short`). */
+export const SHARE_SHORT: Record<
+  Lang,
+  { whatsapp: string; native: string; copy: string; copied: string }
+> = {
+  en: { whatsapp: "WhatsApp", native: "Share", copy: "Copy", copied: "Copied!" },
+  kn: {
+    whatsapp: "WhatsApp",
+    native: "ಹಂಚಿ",
+    copy: "ನಕಲಿಸಿ",
+    copied: "ನಕಲಿಸಲಾಗಿದೆ!",
+  },
+};
