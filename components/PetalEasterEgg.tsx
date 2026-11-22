@@ -35,7 +35,13 @@ const GRADIENTS = [
 const PETALS_PER_BURST = 26;
 const MAX_LIFE_MS = 6000;
 
-export default function PetalEasterEgg() {
+export default function PetalEasterEgg({
+  first = "Punith",
+  second = "Pallavi",
+}: {
+  first?: string;
+  second?: string;
+} = {}) {
   const [mounted, setMounted] = useState(false);
   const [petals, setPetals] = useState<Petal[]>([]);
   const idRef = useRef(0);
@@ -73,7 +79,7 @@ export default function PetalEasterEgg() {
         className="cursor-pointer select-none font-serif text-5xl font-light tracking-tight text-[#3a2030] transition-transform active:scale-[0.98] sm:text-6xl"
         title="tap us 🌸"
       >
-        Punith <span className="text-rose-400">&amp;</span> Pallavi
+        {first} <span className="text-rose-400">&amp;</span> {second}
       </h1>
 
       {mounted &&

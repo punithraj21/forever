@@ -5,12 +5,16 @@
 // Forecast data is only available ~16 days out, so dates beyond that window show
 // a seasonal note instead. The window check is dynamic against the real "today",
 // so the wedding card will auto-switch to a live forecast once Feb 2027 is near.
+//
+// Pass `only="wedding"` to show just that event (the home page does). With no
+// prop every event renders — /legacy relies on that, so keep it the default.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Accent = "amber" | "rose";
 
 type EventWeather = {
+  id: "engagement" | "wedding";
   title: string;
   dateISO: string; // yyyy-mm-dd, used for the forecast query
   dateLabel: string;
@@ -22,6 +26,7 @@ type EventWeather = {
 
 const EVENTS: EventWeather[] = [
   {
+    id: "engagement",
     title: "Engagement",
     dateISO: "2026-06-21",
     dateLabel: "June 21, 2026",
@@ -32,6 +37,7 @@ const EVENTS: EventWeather[] = [
       "Late June in Bengaluru is warm and humid with passing monsoon showers — usually around 28°C by day.",
   },
   {
+    id: "wedding",
     title: "Wedding Day",
     dateISO: "2027-02-11",
     dateLabel: "February 11, 2027",
@@ -91,10 +97,21 @@ const ACCENT: Record<Accent, { eyebrow: string; card: string; link: string }> = 
   },
 };
 
-export default function Weather() {
+export default function Weather({
+  only,
+  label,
+}: {
+  only?: EventWeather["id"];
+  /** Overrides the card's eyebrow (default keeps /legacy unchanged). */
+  label?: string;
+}) {
+  const events = useMemo(
+    () => (only ? EVENTS.filter((e) => e.id === only) : EVENTS),
+    [only],
+  );
   const [statuses, setStatuses] = useState<Record<string, Status>>(() =>
     Object.fromEntries(
-      EVENTS.map((e) => [e.title, { state: "loading" } as Status]),
+      events.map((e) => [e.title, { state: "loading" } as Status]),
     ),
   );
 
@@ -135,7 +152,7 @@ export default function Weather() {
       }
     }
 
-    Promise.all(EVENTS.map(load)).then((results) => {
+    Promise.all(events.map(load)).then((results) => {
       if (!active) return;
       setStatuses((prev) => {
         const next = { ...prev };
@@ -148,7 +165,7 @@ export default function Weather() {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [events]);
 
   return (
     <section className="fade-in w-full">
@@ -162,8 +179,12 @@ export default function Weather() {
         <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-rose-300 to-transparent" />
       </div>
 
-      <div className="grid w-full gap-6 sm:gap-8 lg:grid-cols-2">
-        {EVENTS.map((event) => {
+      <div
+        className={`grid w-full gap-6 sm:gap-8 ${
+          events.length > 1 ? "lg:grid-cols-2" : "mx-auto max-w-xl"
+        }`}
+      >
+        {events.map((event) => {
           const accent = ACCENT[event.accent];
           const status = statuses[event.title];
           return (
@@ -174,7 +195,7 @@ export default function Weather() {
               <p
                 className={`text-xs font-medium uppercase tracking-[0.32em] ${accent.eyebrow}`}
               >
-                {event.title}
+                {label ?? event.title}
               </p>
               <p className="mt-1 font-serif text-lg text-[#7a5560]">
                 {event.dateLabel}

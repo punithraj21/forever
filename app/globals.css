@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Tiro+Kannada:ital@0;1&family=Noto+Sans+Kannada:wght@400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -78,10 +78,64 @@ body {
   animation-fill-mode: forwards;
 }
 
+/* Wedding backdrop (WeddingBackdrop.tsx): slow mandala turn. */
+@keyframes mandala-spin {
+  to { transform: rotate(360deg); }
+}
+
+.mandala-spin {
+  animation: mandala-spin 160s linear infinite;
+}
+.mandala-spin-rev {
+  animation: mandala-spin 220s linear infinite reverse;
+}
+/* Garland strings: positioned here, swung by GarlandMotion.tsx (JS physics). */
+.strand {
+  position: absolute;
+  top: 0;
+  width: 26px;
+}
+.seg {
+  position: absolute;
+  left: 0;
+  width: 26px;
+  transform-origin: 50% 0;
+  will-change: transform;
+}
+.seg-svg {
+  display: block;
+  filter: drop-shadow(1px 4px 2px rgba(90, 40, 10, 0.28));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .petal {
     display: none;
   }
+  .mandala-spin,
+  .mandala-spin-rev {
+    animation: none;
+  }
+}
+
+/* Kannada page (/kn): wide letter-spacing breaks Kannada conjunct shaping and
+   looks wrong in an abugida, and uppercase is meaningless — reset both under
+   :lang(kn). Specificity (0,2,0) beats Tailwind's single-class utilities. */
+:lang(kn) [class*="tracking-"],
+:lang(kn) .uppercase {
+  letter-spacing: normal;
+}
+:lang(kn) .font-serif {
+  line-height: 1.35;
+}
+/* Kannada script needs more size than Latin small caps to stay legible. */
+:lang(kn) .text-xs {
+  font-size: 0.85rem;
+}
+:lang(kn) .text-\[10px\] {
+  font-size: 12px;
+}
+:lang(kn) .text-\[0\.65rem\] {
+  font-size: 0.8rem;
 }
 
 /* Our Story feed (components/story): each chapter eases in as its page lands.

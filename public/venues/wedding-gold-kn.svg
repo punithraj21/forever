@@ -1,0 +1,40 @@
+<svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ಎನ್.ಎಸ್. ಕನ್ವೆನ್ಷನ್ ಹಾಲ್, ದೊಡ್ಡಬಳ್ಳಾಪುರ">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7a1f2b" />
+      <stop offset="1" stop-color="#4a0f1c" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="45%" r="55%">
+      <stop offset="0" stop-color="#f5b94a" stop-opacity="0.35" />
+      <stop offset="1" stop-color="#f5b94a" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#b7832f" />
+      <stop offset="0.5" stop-color="#f6d58b" />
+      <stop offset="1" stop-color="#b7832f" />
+    </linearGradient>
+    <g id="petal">
+      <path d="M0 -150 C 20 -128, 20 -104, 0 -86 C -20 -104, -20 -128, 0 -150Z" />
+    </g>
+  </defs>
+  <rect width="800" height="300" fill="url(#bg)" />
+  <rect width="800" height="300" fill="url(#glow)" />
+  <!-- half mandalas peeking in from both sides -->
+  <g fill="none" stroke="#e8b960" stroke-opacity="0.28" stroke-width="1.2">
+    <g transform="translate(0 150)">
+      <circle r="150" /><circle r="122" /><circle r="84" /><circle r="44" />
+      <use href="#petal" transform="rotate(0)" /><use href="#petal" transform="rotate(22.5)" /><use href="#petal" transform="rotate(45)" /><use href="#petal" transform="rotate(67.5)" /><use href="#petal" transform="rotate(90)" /><use href="#petal" transform="rotate(112.5)" /><use href="#petal" transform="rotate(135)" /><use href="#petal" transform="rotate(157.5)" />
+    </g>
+    <g transform="translate(800 150)">
+      <circle r="150" /><circle r="122" /><circle r="84" /><circle r="44" />
+      <use href="#petal" transform="rotate(180)" /><use href="#petal" transform="rotate(202.5)" /><use href="#petal" transform="rotate(225)" /><use href="#petal" transform="rotate(247.5)" /><use href="#petal" transform="rotate(270)" /><use href="#petal" transform="rotate(292.5)" /><use href="#petal" transform="rotate(315)" /><use href="#petal" transform="rotate(337.5)" />
+    </g>
+  </g>
+  <!-- gold border -->
+  <rect x="18" y="18" width="764" height="264" rx="10" fill="none" stroke="url(#gold)" stroke-opacity="0.7" stroke-width="1.5" />
+  <rect x="26" y="26" width="748" height="248" rx="7" fill="none" stroke="url(#gold)" stroke-opacity="0.35" stroke-width="1" />
+  <text x="400" y="112" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="40" fill="#f6d58b">❀</text>
+  <text x="400" y="172" text-anchor="middle" font-family="'Noto Serif Kannada', 'Tiro Kannada', 'Kannada Sangam MN', 'Nirmala UI', 'Noto Sans Kannada', serif" font-size="34" fill="#fdf2dc">ಎನ್.ಎಸ್. ಕನ್ವೆನ್ಷನ್ ಹಾಲ್</text>
+  <rect x="340" y="192" width="120" height="1.5" fill="url(#gold)" />
+  <text x="400" y="230" text-anchor="middle" font-family="'Noto Serif Kannada', 'Tiro Kannada', 'Kannada Sangam MN', 'Nirmala UI', 'Noto Sans Kannada', serif" font-size="18" fill="#e8b960">ದೊಡ್ಡಬಳ್ಳಾಪುರ</text>
+</svg>

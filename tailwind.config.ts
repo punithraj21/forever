@@ -8,8 +8,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ["var(--font-serif)", "Georgia", "serif"],
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        // Kannada glyphs fall through to Tiro Kannada / Noto Sans Kannada (Latin
+        // stays Cormorant / Inter). Google Fonts unicode-range means the Kannada
+        // files only download on pages that actually render Kannada.
+        serif: ["var(--font-serif)", "Tiro Kannada", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "Noto Sans Kannada", "system-ui", "sans-serif"],
       },
     },
   },

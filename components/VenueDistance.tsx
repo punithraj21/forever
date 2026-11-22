@@ -6,12 +6,16 @@
 // stored or sent anywhere. We don't auto-prompt: the user taps to consent.
 // Requires a secure context (HTTPS or localhost), which both dev and the Vercel
 // deploy satisfy.
+//
+// Pass `only="wedding"` to measure just that venue (the home page does). With no
+// prop every venue renders — /legacy relies on that, so keep it the default.
 
 import { useEffect, useState } from "react";
 
 type Accent = "amber" | "rose";
 
 type Venue = {
+  id: "engagement" | "wedding";
   eyebrow: string;
   emoji: string;
   venue: string;
@@ -23,6 +27,7 @@ type Venue = {
 
 const VENUES: Venue[] = [
   {
+    id: "engagement",
     eyebrow: "Engagement",
     emoji: "✦",
     venue: "Shri Manjunatha Grand Veg",
@@ -32,9 +37,10 @@ const VENUES: Venue[] = [
     accent: "amber",
   },
   {
+    id: "wedding",
     eyebrow: "Wedding Day",
     emoji: "❀",
-    venue: "NS Convention Halls",
+    venue: "NS Convention Hall",
     lat: 13.2872715,
     lon: 77.5738031,
     mapUrl: "https://maps.app.goo.gl/DEe8rXU4ch4fGqxf7",
@@ -80,7 +86,15 @@ function fmtDistance(km: number): string {
 
 type Status = "unsupported" | "idle" | "loading" | "ready" | "denied" | "error";
 
-export default function VenueDistance() {
+export default function VenueDistance({
+  only,
+  label,
+}: {
+  only?: Venue["id"];
+  /** Overrides the card's eyebrow (default keeps /legacy unchanged). */
+  label?: string;
+}) {
+  const venues = only ? VENUES.filter((v) => v.id === only) : VENUES;
   const [status, setStatus] = useState<Status>("idle");
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(
     null,
@@ -124,8 +138,12 @@ export default function VenueDistance() {
 
       {status === "ready" && coords ? (
         <>
-          <div className="grid w-full gap-6 sm:gap-8 lg:grid-cols-2">
-            {VENUES.map((v) => {
+          <div
+            className={`grid w-full gap-6 sm:gap-8 ${
+              venues.length > 1 ? "lg:grid-cols-2" : "mx-auto max-w-xl"
+            }`}
+          >
+            {venues.map((v) => {
               const accent = ACCENT[v.accent];
               const km = haversineKm(coords.lat, coords.lon, v.lat, v.lon);
               return (
@@ -139,7 +157,7 @@ export default function VenueDistance() {
                     <span aria-hidden className="mr-1.5">
                       {v.emoji}
                     </span>
-                    {v.eyebrow}
+                    {label ?? v.eyebrow}
                   </p>
                   <h3 className="mt-1 font-serif text-2xl font-light tracking-tight text-[#3a2030]">
                     {v.venue}

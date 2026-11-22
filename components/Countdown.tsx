@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { COPY, type Lang } from "@/lib/i18n";
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 
@@ -26,8 +27,13 @@ function getTimeState(target: Date): TimeState {
 
 const pad = (n: number) => n.toString().padStart(2, "0");
 
-function monthsAndDaysBetween(from: Date, to: Date): { months: number; days: number } {
-  let months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+function monthsAndDaysBetween(
+  from: Date,
+  to: Date,
+): { months: number; days: number } {
+  let months =
+    (to.getFullYear() - from.getFullYear()) * 12 +
+    (to.getMonth() - from.getMonth());
   let days = to.getDate() - from.getDate();
   if (days < 0) {
     months -= 1;
@@ -40,10 +46,17 @@ function monthsAndDaysBetween(from: Date, to: Date): { months: number; days: num
   return { months, days };
 }
 
-function formatMonthsDays({ months, days }: { months: number; days: number }): string {
+function formatMonthsDays({
+  months,
+  days,
+}: {
+  months: number;
+  days: number;
+}): string {
   const parts: string[] = [];
   if (months > 0) parts.push(`${months} month${months === 1 ? "" : "s"}`);
-  if (days > 0 || parts.length === 0) parts.push(`${days} day${days === 1 ? "" : "s"}`);
+  if (days > 0 || parts.length === 0)
+    parts.push(`${days} day${days === 1 ? "" : "s"}`);
   return parts.join(", ");
 }
 
@@ -57,6 +70,8 @@ type Props = {
   passedVerb?: string;
   /** When true (and the date hasn't passed yet), shows a "X months, Y days left" caption. */
   showMonthsLeft?: boolean;
+  /** Language for units, date and captions. Omit for the original English copy. */
+  lang?: Lang;
 };
 
 const accentStyles = {
@@ -86,7 +101,9 @@ export default function Countdown({
   emoji,
   passedVerb,
   showMonthsLeft,
+  lang,
 }: Props) {
+  const copy = lang ? COPY[lang].countdown : null;
   const target = new Date(targetISO);
   const [time, setTime] = useState<TimeState | null>(null);
   const styles = accentStyles[accent];
@@ -98,21 +115,28 @@ export default function Countdown({
   }, [targetISO]);
 
   const isPast = time !== null && time.mode === "elapsed";
-  const dateLabel = target.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const dateLabel = target.toLocaleDateString(
+    lang ? COPY[lang].locale : "en-US",
+    {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    },
+  );
 
   const effectiveSubtitle = isPast && passedVerb ? passedVerb : subtitle;
 
-  const monthsLeftLabel =
-    showMonthsLeft && time !== null && !isPast
-      ? formatMonthsDays(
-          monthsAndDaysBetween(new Date(target.getTime() - time.totalMs), target)
-        )
-      : null;
+  const monthsLeftLabel = (() => {
+    if (!showMonthsLeft || time === null || isPast) return null;
+    const md = monthsAndDaysBetween(
+      new Date(target.getTime() - time.totalMs),
+      target,
+    );
+    return copy
+      ? copy.monthsLeft(md.months, md.days)
+      : `${formatMonthsDays(md)} left`;
+  })();
 
   return (
     <div
@@ -135,34 +159,56 @@ export default function Countdown({
         <p className="text-sm text-[#7a5560] sm:text-base">{dateLabel}</p>
         {isPast && passedVerb && (
           <p className="font-serif text-sm italic text-[#7a5560] sm:text-base">
-            {passedVerb} for
+            {copy ? copy.passedFor : `${passedVerb} for`}
           </p>
         )}
       </div>
 
-      <div className="mt-8 grid grid-cols-4 gap-3 sm:gap-4">
+      <div className="mt-8 grid grid-cols-4 gap-2 sm:gap-4">
         {(
           [
-            ["Days", time?.days],
-            ["Hours", time?.hours],
-            ["Minutes", time?.minutes],
-            ["Seconds", time?.seconds],
+            // [key, label, short label for phones, value]
+            ["days", ...(copy?.units.days ?? ["Days", "Days"]), time?.days],
+            [
+              "hours",
+              ...(copy?.units.hours ?? ["Hours", "Hours"]),
+              time?.hours,
+            ],
+            [
+              "minutes",
+              ...(copy?.units.minutes ?? ["Minutes", "Mins"]),
+              time?.minutes,
+            ],
+            [
+              "seconds",
+              ...(copy?.units.seconds ?? ["Seconds", "Secs"]),
+              time?.seconds,
+            ],
           ] as const
-        ).map(([label, value]) => (
+        ).map(([unit, label, short, value]) => (
           <div
-            key={label}
-            className={`flex flex-col items-center justify-center overflow-hidden rounded-2xl border ${styles.tile} px-2 py-4 backdrop-blur-sm sm:px-4 sm:py-6`}
+            key={unit}
+            className={`flex flex-col items-center justify-center overflow-hidden rounded-2xl border ${styles.tile} px-1 py-4 backdrop-blur-sm sm:px-4 sm:py-6`}
           >
             <span
               key={value ?? "loading"}
               className={`animate-tick font-serif text-3xl font-semibold tabular-nums sm:text-5xl ${styles.digit}`}
             >
-              {value === undefined ? "--" : label === "Days" ? value : pad(value)}
+              {value === undefined
+                ? "--"
+                : unit === "days"
+                  ? value
+                  : pad(value)}
             </span>
             <span
-              className={`mt-1 text-[10px] font-medium uppercase tracking-[0.18em] sm:text-xs ${styles.label}`}
+              // phones get short labels ("Mins"/"Secs") — the full words don't
+              // fit a quarter-width tile at 375px
+              className={`mt-1 text-[10px] font-medium uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.18em] ${styles.label}`}
             >
-              {label}
+              <span className="sm:hidden" aria-hidden>
+                {short}
+              </span>
+              <span className="sr-only sm:not-sr-only">{label}</span>
             </span>
           </div>
         ))}
@@ -171,13 +217,13 @@ export default function Countdown({
       {isPast && (
         <p className="mt-6 text-center font-serif text-base italic text-[#7a5560]">
           {passedVerb
-            ? "and counting…"
+            ? (copy?.andCounting ?? "and counting…")
             : "The day has arrived."}
         </p>
       )}
       {monthsLeftLabel && (
         <p className="mt-6 text-center font-serif text-base italic text-[#7a5560]">
-          {monthsLeftLabel} left
+          {monthsLeftLabel}
         </p>
       )}
     </div>
