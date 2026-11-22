@@ -13,7 +13,7 @@
 // Render inside a `relative isolate` wrapper; it fills that wrapper with
 // `absolute inset-0 -z-10` and ignores pointer events.
 
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import GarlandMotion from "./GarlandMotion";
 
 const range = (n: number) => Array.from({ length: n }, (_, i) => i);
@@ -413,16 +413,6 @@ export default function WeddingBackdrop({
    *  starts underneath it) instead of behind everything */
   garlandFront?: boolean;
 }) {
-  // The front garland stays pinned to the top of the screen; once the
-  // page is scrolled it shortens to a band and fades out underneath.
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    if (!garlandFront) return;
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [garlandFront]);
   return (
     <>
     <div
@@ -464,16 +454,7 @@ export default function WeddingBackdrop({
     {garlandFront && (
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-x-0 top-0 z-20 overflow-hidden transition-[height] duration-300"
-        style={{
-          height: scrolled ? 100 : 240,
-          WebkitMaskImage: scrolled
-            ? "linear-gradient(to bottom, #000 60%, transparent)"
-            : undefined,
-          maskImage: scrolled
-            ? "linear-gradient(to bottom, #000 60%, transparent)"
-            : undefined,
-        }}
+        className="pointer-events-none absolute inset-0 z-20 overflow-hidden"
       >
         <Garland />
         <GarlandMotion />
