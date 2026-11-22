@@ -126,7 +126,7 @@ export const COPY = {
       tagline: "ಶಾಶ್ವತ ಬಂಧನದತ್ತ ಕ್ಷಣಗಣನೆ",
     },
     countdown: {
-      title: "ಶುಭ ಮುಹೂರ್ತ",
+      title: "ಮುಹೂರ್ತ",
       subtitle: "ಶುಭ ವಿವಾಹ",
       passedVerb: "ವಿವಾಹಿತರು",
       passedFor: "ಮದುವೆಯಾಗಿ",
@@ -146,7 +146,7 @@ export const COPY = {
       eyebrow: "ದಿನಾಂಕ ನೆನಪಿರಲಿ",
       heading: "ಸಮಾರಂಭದ ವಿವರಗಳು",
       cardEyebrow: "ಶುಭ ವಿವಾಹ",
-      cardTitle: "ಶುಭ ಮುಹೂರ್ತ",
+      cardTitle: "ಮುಹೂರ್ತ",
       date: "ಗುರುವಾರ, ಫೆಬ್ರವರಿ 11, 2027",
       time: "ಬೆಳಿಗ್ಗೆ 11:30",
       venue: "ಎನ್.ಎಸ್. ಕನ್ವೆನ್ಷನ್ ಹಾಲ್",
@@ -159,7 +159,7 @@ export const COPY = {
     map: {
       eyebrow: "ದಾರಿ ಹುಡುಕಿ",
       heading: "ನಕ್ಷೆಯಲ್ಲಿ",
-      cardEyebrow: "ಶುಭ ಮುಹೂರ್ತ",
+      cardEyebrow: "ಮುಹೂರ್ತ",
       venue: "ಎನ್.ಎಸ್. ಕನ್ವೆನ್ಷನ್ ಹಾಲ್",
       directions: "ದಾರಿ ತೋರಿಸಿ",
     },
