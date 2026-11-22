@@ -21,7 +21,6 @@ type InviteCopy = {
   second: string;
   invitation: string;
   events: [EventCopy, EventCopy]; // chronological: reception, then wedding
-  labels: { date: string; time: string; venue: string };
   venueName: string;
   venueTown: string;
   venueSection: {
@@ -30,7 +29,6 @@ type InviteCopy = {
     directions: string;
     banner: string;
   };
-  calendar: { google: string; other: string };
   share: {
     heading: string;
     note: string;
@@ -70,7 +68,6 @@ export const INVITE_COPY = {
         time: "11:30 AM",
       },
     ],
-    labels: { date: "Date", time: "Time", venue: "Venue" },
     venueName: "NS Convention Hall",
     venueTown: "Doddaballapur",
     venueSection: {
@@ -79,7 +76,6 @@ export const INVITE_COPY = {
       directions: "Get directions",
       banner: "/venues/wedding-gold.svg",
     },
-    calendar: { google: "Google Calendar", other: "Apple / Outlook" },
     share: {
       heading: "Share the invitation",
       note: "Send this page to family and friends.",
@@ -117,7 +113,6 @@ export const INVITE_COPY = {
         time: "ಬೆಳಿಗ್ಗೆ 11:30",
       },
     ],
-    labels: { date: "ದಿನಾಂಕ", time: "ಸಮಯ", venue: "ಸ್ಥಳ" },
     venueName: "ಎನ್.ಎಸ್. ಕನ್ವೆನ್ಷನ್ ಹಾಲ್",
     venueTown: "ದೊಡ್ಡಬಳ್ಳಾಪುರ",
     venueSection: {
@@ -126,7 +121,6 @@ export const INVITE_COPY = {
       directions: "ದಾರಿ ತೋರಿಸಿ",
       banner: "/venues/wedding-gold-kn.svg",
     },
-    calendar: { google: "Google ಕ್ಯಾಲೆಂಡರ್", other: "Apple / Outlook" },
     share: {
       heading: "ಆಹ್ವಾನವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ",
       note: "ಈ ಪುಟವನ್ನು ಬಂಧು-ಮಿತ್ರರಿಗೆ ಕಳುಹಿಸಿ.",
