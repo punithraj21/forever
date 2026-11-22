@@ -1,5 +1,6 @@
 "use client";
 
+import { ENGAGEMENT_MAPS_URL, VENUE_MAPS_URL } from "@/lib/calendar";
 // "Distance to the Venue" — opt-in geolocation. On tap we read the visitor's
 // position via the browser Geolocation API and compute straight-line (haversine)
 // distance to each venue, entirely client-side — the coordinates are never
@@ -33,7 +34,7 @@ const VENUES: Venue[] = [
     venue: "Shri Manjunatha Grand Veg",
     lat: 13.2802724,
     lon: 77.5545281,
-    mapUrl: "https://maps.app.goo.gl/TjT39YazGP5VF4AaA",
+    mapUrl: ENGAGEMENT_MAPS_URL,
     accent: "amber",
   },
   {
@@ -43,7 +44,7 @@ const VENUES: Venue[] = [
     venue: "NS Convention Hall",
     lat: 13.2872715,
     lon: 77.5738031,
-    mapUrl: "https://maps.app.goo.gl/DEe8rXU4ch4fGqxf7",
+    mapUrl: VENUE_MAPS_URL,
     accent: "rose",
   },
 ];

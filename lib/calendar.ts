@@ -6,7 +6,30 @@
 
 export const VENUE_NAME = "NS Convention Hall";
 export const VENUE_TOWN = "Doddaballapur";
-export const VENUE_MAPS_URL = "https://maps.app.goo.gl/DEe8rXU4ch4fGqxf7";
+/**
+ * Official long-form Google Maps link for a spot. Don't use maps.app.goo.gl
+ * short links here: they now hang on desktop and, on Android Chrome, bounce to
+ * goo.gl/app/maps → "Dynamic Link Not Found" (Firebase Dynamic Links shut
+ * down). This form opens the Maps app on phones and maps in a browser.
+ */
+export const googleMapsUrl = (lat: number, lon: number) =>
+  `https://www.google.com/maps/search/?api=1&query=${lat}%2C${lon}`;
+
+/** NS Convention Hall — same coordinates as the embedded map (VenueMap). */
+export const WEDDING_VENUE = { lat: 13.2872715, lon: 77.5738031 };
+/** Shri Manjunatha Grand Veg (engagement, /legacy + /share/engagement). */
+export const ENGAGEMENT_VENUE = { lat: 13.2802724, lon: 77.5545281 };
+
+// By name rather than coordinates so the pin is labelled with the hall (Google
+// lists it as "NS Convention Halls"). Checked: this search lands exactly on
+// WEDDING_VENUE. If it ever picks the wrong place, fall back to
+// googleMapsUrl(WEDDING_VENUE.lat, WEDDING_VENUE.lon).
+export const VENUE_MAPS_URL =
+  "https://www.google.com/maps/search/?api=1&query=NS+Convention+Hall%2C+Doddaballapur";
+export const ENGAGEMENT_MAPS_URL = googleMapsUrl(
+  ENGAGEMENT_VENUE.lat,
+  ENGAGEMENT_VENUE.lon,
+);
 
 export type CalEvent = {
   uid: string;

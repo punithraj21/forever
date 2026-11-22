@@ -1,3 +1,4 @@
+import { ENGAGEMENT_MAPS_URL, VENUE_MAPS_URL } from "@/lib/calendar";
 // Interactive venue maps on the home page — one embedded Google Map per venue.
 //
 // Uses the keyless `maps.google.com/maps?q=lat,lon&output=embed` iframe (no API
@@ -35,7 +36,7 @@ const VENUES: Venue[] = [
     venue: "Shri Manjunatha Grand Veg",
     lat: 13.2802724,
     lon: 77.5545281,
-    mapUrl: "https://maps.app.goo.gl/TjT39YazGP5VF4AaA",
+    mapUrl: ENGAGEMENT_MAPS_URL,
     accent: "amber",
   },
   {
@@ -45,7 +46,7 @@ const VENUES: Venue[] = [
     venue: "NS Convention Hall",
     lat: 13.2872715,
     lon: 77.5738031,
-    mapUrl: "https://maps.app.goo.gl/DEe8rXU4ch4fGqxf7",
+    mapUrl: VENUE_MAPS_URL,
     accent: "rose",
   },
 ];

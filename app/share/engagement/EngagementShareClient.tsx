@@ -1,11 +1,12 @@
 "use client";
 
+import { ENGAGEMENT_MAPS_URL } from "@/lib/calendar";
 import Link from "next/link";
 import { useState } from "react";
 
 // Bump the version when the OG design changes so browsers and CDNs fetch a fresh PNG.
 const IMAGE_URL = "/share/engagement/og?v=2";
-const VENUE_URL = "https://maps.app.goo.gl/bN6oeNQNvGHJVkiX7";
+const VENUE_URL = ENGAGEMENT_MAPS_URL;
 const VENUE_NAME = "Manjunath Grand";
 const SHARE_TEXT =
   "Save the date — Punith & Pallavi · Engagement · Sunday, June 21, 2026 · Manjunath Grand";

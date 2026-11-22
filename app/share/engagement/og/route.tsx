@@ -1,7 +1,8 @@
+import { ENGAGEMENT_MAPS_URL } from "@/lib/calendar";
 import { ImageResponse } from "next/og";
 import QRCode from "qrcode";
 
-const VENUE_URL = "https://maps.app.goo.gl/bN6oeNQNvGHJVkiX7";
+const VENUE_URL = ENGAGEMENT_MAPS_URL;
 
 async function loadGoogleFont(family: string, weight: number) {
   // Use the v1 CSS endpoint with NO User-Agent so Google returns TTF (truetype),

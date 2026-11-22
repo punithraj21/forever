@@ -12,7 +12,7 @@
 // direct image URL (any https://… image link works, no extra config needed).
 
 import { COPY, type Lang } from "@/lib/i18n";
-import { WEDDING, googleCalUrl } from "@/lib/calendar";
+import { WEDDING, googleCalUrl, ENGAGEMENT_MAPS_URL, VENUE_MAPS_URL } from "@/lib/calendar";
 
 type EventInfo = {
   id: "engagement" | "wedding";
@@ -43,7 +43,7 @@ const EVENTS: EventInfo[] = [
     date: "Sunday, June 21, 2026",
     time: "10:00 AM onwards",
     venue: "Shri Manjunatha Grand Veg",
-    mapUrl: "https://maps.app.goo.gl/TjT39YazGP5VF4AaA",
+    mapUrl: ENGAGEMENT_MAPS_URL,
     image: "/venues/engagement.svg",
     accent: "amber",
   },
@@ -55,7 +55,7 @@ const EVENTS: EventInfo[] = [
     date: "Thursday, February 11, 2027",
     time: "11:30 AM",
     venue: "NS Convention Hall",
-    mapUrl: "https://maps.app.goo.gl/DEe8rXU4ch4fGqxf7",
+    mapUrl: VENUE_MAPS_URL,
     image: "/venues/wedding.svg",
     goldImage: "/venues/wedding-gold.svg",
     calendar: { google: WEDDING_GOOGLE_CAL, ics: "/wedding.ics" },
