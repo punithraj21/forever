@@ -390,7 +390,9 @@ function Garland() {
 
 const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .28  0 0 0 0 .12  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
 
-export default function WeddingBackdrop() {
+/** `quiet` mutes the big hero mandala (the invite page sets its text on an
+ *  ivory sheet, and a full-strength mandala around it competes with it). */
+export default function WeddingBackdrop({ quiet = false }: { quiet?: boolean }) {
   return (
     <div
       aria-hidden
@@ -403,7 +405,11 @@ export default function WeddingBackdrop() {
 
       {/* slowly turning gold mandala */}
       <div className="absolute left-1/2 top-[90px] -translate-x-1/2">
-        <Mandala className="mandala-spin h-[820px] w-[820px] text-amber-600/30 sm:h-[1100px] sm:w-[1100px]" />
+        <Mandala
+          className={`mandala-spin h-[820px] w-[820px] sm:h-[1100px] sm:w-[1100px] ${
+            quiet ? "text-amber-600/[0.14]" : "text-amber-600/30"
+          }`}
+        />
       </div>
 
       {/* faint rose mandala at the foot of the page */}
