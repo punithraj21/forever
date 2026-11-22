@@ -12,6 +12,7 @@
 // direct image URL (any https://… image link works, no extra config needed).
 
 import { COPY, type Lang } from "@/lib/i18n";
+import { WEDDING, googleCalUrl } from "@/lib/calendar";
 
 type EventInfo = {
   id: "engagement" | "wedding";
@@ -30,19 +31,8 @@ type EventInfo = {
   accent: "amber" | "rose";
 };
 
-// Google Calendar "add event" link. 11:30 AM IST = 06:00 UTC; the 3-hour end is
-// an assumption — keep in sync with WEDDING_END in app/wedding.ics/route.ts.
-const WEDDING_GOOGLE_CAL =
-  "https://calendar.google.com/calendar/render?" +
-  new URLSearchParams({
-    action: "TEMPLATE",
-    text: "Punith & Pallavi — Wedding",
-    dates: "20270211T060000Z/20270211T090000Z",
-    ctz: "Asia/Kolkata",
-    location: "NS Convention Hall, Doddaballapur",
-    details:
-      "Muhurtha at 11:30 AM. Directions: https://maps.app.goo.gl/DEe8rXU4ch4fGqxf7",
-  }).toString();
+// Google Calendar link built from the shared event data in lib/calendar.ts.
+const WEDDING_GOOGLE_CAL = googleCalUrl(WEDDING);
 
 const EVENTS: EventInfo[] = [
   {
