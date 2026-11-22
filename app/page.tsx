@@ -13,8 +13,8 @@ import WeddingHome from "@/components/WeddingHome";
 // Static PNG (rendered from app/og/wedding/route.tsx and saved to public/):
 // generating it per request exceeds the Workers CPU limit (error 1102).
 // To change the card: edit the route, open /og/wedding locally, save the PNG
-// over public/og-wedding.png, and bump ?v=.
-const OG_IMAGE_PATH = "/og-wedding.png?v=3";
+// over public/og-wedding.jpg (JPEG export of the .png), then re-export the .jpg (sips -s format jpeg) under a new file name so WhatsApp refetches.
+const OG_IMAGE_PATH = "/og-wedding.jpg";
 const SHARE_TITLE = "Punith & Pallavi · Wedding";
 const SHARE_DESCRIPTION =
   "Thursday, February 11, 2027 · 11:30 AM at NS Convention Hall, Doddaballapur.";
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: "Punith & Pallavi — wedding, February 11, 2027 at NS Convention Hall",
-        type: "image/png",
+        type: "image/jpeg",
       },
     ],
   },
