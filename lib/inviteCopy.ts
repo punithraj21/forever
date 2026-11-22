@@ -80,8 +80,8 @@ export const INVITE_COPY = {
       heading: "Share the invitation",
       note: "Send this page to family and friends.",
       whatsapp: "Share on WhatsApp",
-      copy: "Copy link",
-      copied: "Link copied!",
+      copy: "Copy invitation",
+      copied: "Invitation copied!",
       native: "Share",
       message:
         "We are inviting you to Punith & Pallavi's wedding 💐\nReception: Wed, Feb 10, 2027 · 7 PM onwards\nMuhurtha: Thu, Feb 11, 2027 · 11:30 AM\nNS Convention Hall, Doddaballapur",
@@ -125,8 +125,8 @@ export const INVITE_COPY = {
       heading: "ಆಹ್ವಾನವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ",
       note: "ಈ ಪುಟವನ್ನು ಬಂಧು-ಮಿತ್ರರಿಗೆ ಕಳುಹಿಸಿ.",
       whatsapp: "WhatsApp ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ",
-      copy: "ಲಿಂಕ್ ನಕಲಿಸಿ",
-      copied: "ಲಿಂಕ್ ನಕಲಿಸಲಾಗಿದೆ!",
+      copy: "ಆಹ್ವಾನ ನಕಲಿಸಿ",
+      copied: "ಆಹ್ವಾನ ನಕಲಿಸಲಾಗಿದೆ!",
       native: "ಹಂಚಿಕೊಳ್ಳಿ",
       message:
         "ಪುನೀತ್ & ಪಲ್ಲವಿ ಅವರ ವಿವಾಹಕ್ಕೆ ತಮಗೆ ಆತ್ಮೀಯ ಆಹ್ವಾನ 💐\nಆರತಕ್ಷತೆ: ಬುಧವಾರ, ಫೆಬ್ರವರಿ 10, 2027 · ಸಂಜೆ 7 ಗಂಟೆಯಿಂದ\nಮುಹೂರ್ತ: ಗುರುವಾರ, ಫೆಬ್ರವರಿ 11, 2027 · ಬೆಳಿಗ್ಗೆ 11:30\nಎನ್.ಎಸ್. ಕನ್ವೆನ್ಷನ್ ಹಾಲ್, ದೊಡ್ಡಬಳ್ಳಾಪುರ",

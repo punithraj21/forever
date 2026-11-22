@@ -28,13 +28,15 @@ export default function ShareButtons({ labels }: { labels: Labels }) {
   const text = `${labels.message}\n\n${url}`;
   const waHref = `https://wa.me/?text=${encodeURIComponent(text)}`;
 
+  // Copies the whole invitation message + link (same text as the WhatsApp
+  // button), so whatever app it's pasted into gets the caption too.
   async function copy() {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(text);
     } catch {
       // older browsers: fall back to a hidden textarea
       const ta = document.createElement("textarea");
-      ta.value = url;
+      ta.value = text;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand("copy");
