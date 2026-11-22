@@ -1,10 +1,17 @@
+"use client";
+// "use client" is for page weight, not interactivity: as a server component
+// the whole garland/mandala SVG was serialised twice — once as HTML and again
+// in the RSC payload (~330 KB of a 580 KB page). As a client component the
+// payload holds only a reference; the HTML is still server-rendered and
+// identical (everything here is deterministic, so hydration matches).
+//
 // Decorative wedding backdrop for the home page — pure inline SVG/CSS, no image
 // assets: warm ivory-to-blush wash, a glowing halo + slowly turning gold mandala
 // behind the hero, a hanging marigold garland (toran) across the top, a faint
 // lotus mandala at the foot, and a touch of paper grain.
 //
 // Render inside a `relative isolate` wrapper; it fills that wrapper with
-// `absolute inset-0 -z-10` and ignores pointer events. Server component.
+// `absolute inset-0 -z-10` and ignores pointer events.
 
 import type { ReactNode } from "react";
 import GarlandMotion from "./GarlandMotion";
@@ -80,10 +87,15 @@ function Mandala({ className }: { className?: string }) {
 const STRAND_GAP = 64; // px between strings; also the swag tile width
 const STRAND_COUNT = 42; // ~2700px of coverage (clipped on narrower screens)
 const PITCH = 12; // vertical px between flower heads on a string
+// Math.sin differs between Node (server render) and the browser in the last
+// few bits, and the ×43758 amplifies that — so the result is rounded to 4
+// places, and every coordinate below to 2 (`r2`). Without this the client
+// component hydrates with mismatched attributes (and the HTML is longer).
 const rand = (i: number, salt = 0) => {
   const x = Math.sin(i * 12.9898 + salt * 78.233) * 43758.5453;
-  return x - Math.floor(x);
+  return Math.round((x - Math.floor(x)) * 1e4) / 1e4;
 };
+const r2 = (v: number) => Math.round(v * 100) / 100;
 
 // A frilly petal: narrow at the centre, scalloped along its outer edge.
 const PETAL =
@@ -188,16 +200,16 @@ function Heads({ i, from, count }: { i: number; from: number; count: number }) {
         .reverse()
         .map((k) => {
           const n = i * 53 + from + k;
-          const size = 23 + rand(n, 4) * 4;
-          const cx = 13 + (rand(n, 5) - 0.5) * 1.8;
+          const size = r2(23 + rand(n, 4) * 4);
+          const cx = r2(13 + (rand(n, 5) - 0.5) * 1.8);
           const cy = 9 + k * PITCH;
           const r = rand(n, 7);
           return (
             <use
               key={k}
               href={`#${r > 0.82 ? "mgGold" : r > 0.62 ? "mgDeep" : "mgOrange"}`}
-              x={cx - size / 2}
-              y={cy - size / 2}
+              x={r2(cx - size / 2)}
+              y={r2(cy - size / 2)}
               width={size}
               height={size}
               transform={`rotate(${Math.floor(rand(n, 6) * 360)} ${cx} ${cy})`}
@@ -267,7 +279,7 @@ function Garland() {
     const t = k / 8;
     const x = 2 * (1 - t) * t * 32 + t * t * 64;
     const y = (1 - t) * (1 - t) * 10 + 2 * (1 - t) * t * 30 + t * t * 10;
-    return { x, y, k };
+    return { x: r2(x), y: r2(y), k };
   });
   return (
     <div className="garland absolute inset-x-0 top-0 h-[240px] overflow-hidden">
