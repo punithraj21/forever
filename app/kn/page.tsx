@@ -20,7 +20,7 @@ const SHARE_DESCRIPTION =
 export const metadata: Metadata = {
   title: "ಪುನೀತ್ & ಪಲ್ಲವಿ · ಕ್ಷಣಗಣನೆ",
   description: "ಮದುವೆಯ ದಿನದತ್ತ ಕ್ಷಣಗಣನೆ.",
-  alternates: { languages: { en: "/" } },
+  alternates: { languages: { en: "/en" } },
   openGraph: {
     title: SHARE_TITLE,
     description: SHARE_DESCRIPTION,

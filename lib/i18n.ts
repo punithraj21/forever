@@ -118,7 +118,8 @@ export const COPY = {
   kn: {
     htmlLang: "kn",
     locale: "kn-IN",
-    switchTo: { label: "Read in English", href: "/" },
+    // "/en", not "/": on wedding.devshark.site "/" serves Kannada (see proxy.ts)
+    switchTo: { label: "Read in English", href: "/en" },
     header: {
       eyebrow: "ಪ್ರೀತಿಯಿಂದ",
       first: "ಪುನೀತ್",
