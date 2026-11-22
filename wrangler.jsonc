@@ -28,6 +28,13 @@
       "custom_domain": true
     }
   ],
+  // Copy the prerendered pages into static assets for the static-assets
+  // incremental cache (open-next.config.ts). `opennextjs-cloudflare deploy`
+  // does this itself, a plain `wrangler deploy` doesn't — this makes either
+  // work. Without it every request re-renders the page (error 1102).
+  "build": {
+    "command": "node -e \"const f=require('fs');f.existsSync('.open-next/cache')&&f.cpSync('.open-next/cache','.open-next/assets/cdn-cgi/_next_cache',{recursive:true})\""
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
