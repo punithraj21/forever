@@ -16,6 +16,16 @@
       "pattern": "wedding.devshark.site",
       "zone_name": "devshark.site",
       "custom_domain": true
+    },
+    {
+      "pattern": "pallavipunith.site",
+      "zone_name": "pallavipunith.site",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.pallavipunith.site",
+      "zone_name": "pallavipunith.site",
+      "custom_domain": true
     }
   ],
   "assets": {
