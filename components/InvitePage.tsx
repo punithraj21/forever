@@ -57,6 +57,16 @@ export default function InvitePage({ lang }: { lang: Lang }) {
             <p className="mb-5 font-serif text-lg text-[#9a5a3a] sm:text-xl">
               {t.opening}
             </p>
+            <div className="mx-auto mb-6 h-36 w-36 rounded-full bg-gradient-to-br from-amber-300 via-amber-500 to-amber-200 p-[3px] shadow-[0_10px_30px_-8px_rgba(140,70,30,0.5)] sm:h-44 sm:w-44">
+              <div className="h-full w-full rounded-full bg-[#fffaf2] p-[3px]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/couple.jpg"
+                  alt="Punith and Pallavi"
+                  className="h-full w-full rounded-full object-cover"
+                />
+              </div>
+            </div>
             <p className="text-[0.7rem] font-medium uppercase tracking-[0.3em] text-[#9a5a3a] sm:text-xs">
               {t.eyebrow}
             </p>
