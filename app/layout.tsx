@@ -13,7 +13,11 @@ const siteUrl =
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000");
+      : process.env.NODE_ENV === "production"
+        ? // Cloudflare Workers builds set none of the vars above; without this
+          // og:image would point at localhost and WhatsApp previews break.
+          "https://forever.devshark.site"
+        : "http://localhost:3000");
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

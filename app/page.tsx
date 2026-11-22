@@ -10,7 +10,11 @@ import WeddingHome from "@/components/WeddingHome";
 // route keeps the layout default.
 // Link preview (WhatsApp etc.) — image rendered by app/og/wedding/route.tsx.
 // Bump ?v= when that design changes so WhatsApp re-scrapes a fresh card.
-const OG_IMAGE_PATH = "/og/wedding?v=2";
+// Static PNG (rendered from app/og/wedding/route.tsx and saved to public/):
+// generating it per request exceeds the Workers CPU limit (error 1102).
+// To change the card: edit the route, open /og/wedding locally, save the PNG
+// over public/og-wedding.png, and bump ?v=.
+const OG_IMAGE_PATH = "/og-wedding.png?v=3";
 const SHARE_TITLE = "Punith & Pallavi · Wedding";
 const SHARE_DESCRIPTION =
   "Thursday, February 11, 2027 · 11:30 AM at NS Convention Hall, Doddaballapur.";

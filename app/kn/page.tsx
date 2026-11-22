@@ -8,7 +8,11 @@ import WeddingHome from "@/components/WeddingHome";
 // doesn't shape Kannada conjuncts correctly, so a Kannada card would render
 // broken letters. Title/description below are in Kannada.
 
-const OG_IMAGE_PATH = "/og/wedding?v=2";
+// Static PNG (rendered from app/og/wedding/route.tsx and saved to public/):
+// generating it per request exceeds the Workers CPU limit (error 1102).
+// To change the card: edit the route, open /og/wedding locally, save the PNG
+// over public/og-wedding.png, and bump ?v=.
+const OG_IMAGE_PATH = "/og-wedding.png?v=3";
 const SHARE_TITLE = "ಪುನೀತ್ & ಪಲ್ಲವಿ · ಶುಭ ವಿವಾಹ";
 const SHARE_DESCRIPTION =
   "ಗುರುವಾರ, ಫೆಬ್ರವರಿ 11, 2027 · ಬೆಳಿಗ್ಗೆ 11:30 · ಎನ್.ಎಸ್. ಕನ್ವೆನ್ಷನ್ ಹಾಲ್, ದೊಡ್ಡಬಳ್ಳಾಪುರ";
