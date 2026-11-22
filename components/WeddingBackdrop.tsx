@@ -404,8 +404,17 @@ const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/s
 
 /** `quiet` mutes the big hero mandala (the invite page sets its text on an
  *  ivory sheet, and a full-strength mandala around it competes with it). */
-export default function WeddingBackdrop({ quiet = false }: { quiet?: boolean }) {
+export default function WeddingBackdrop({
+  quiet = false,
+  garlandFront = false,
+}: {
+  quiet?: boolean;
+  /** draw the garland IN FRONT of the page content (the invite sheet then
+   *  starts underneath it) instead of behind everything */
+  garlandFront?: boolean;
+}) {
   return (
+    <>
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
@@ -435,9 +444,23 @@ export default function WeddingBackdrop({ quiet = false }: { quiet?: boolean }) 
       />
 
       {/* marigold toran across the top */}
-      <Garland />
-      <GarlandMotion />
+      {!garlandFront && (
+        <>
+          <Garland />
+          <GarlandMotion />
+        </>
+      )}
     </div>
+    {garlandFront && (
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-20 overflow-hidden"
+      >
+        <Garland />
+        <GarlandMotion />
+      </div>
+    )}
+    </>
   );
 }
 

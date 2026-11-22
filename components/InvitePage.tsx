@@ -44,17 +44,8 @@ export default function InvitePage({ lang }: { lang: Lang }) {
   const t = INVITE_COPY[lang];
   return (
     <div lang={t.htmlLang} className="relative isolate overflow-x-clip">
-      <WeddingBackdrop quiet />
-      <main className="relative mx-auto flex min-h-screen max-w-4xl flex-col items-center px-4 pb-14 pt-52 sm:px-6 sm:pb-20 sm:pt-60">
-        <Link
-          href={t.switchTo.href}
-          lang={lang === "en" ? "kn" : "en"}
-          className="fade-in mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/70 bg-white/70 px-4 py-1.5 text-xs font-medium text-[#7a1f2b] shadow-sm backdrop-blur-sm transition hover:bg-amber-50"
-        >
-          <span aria-hidden>🌐</span>
-          {t.switchTo.label}
-        </Link>
-
+      <WeddingBackdrop quiet garlandFront />
+      <main className="relative mx-auto flex min-h-screen max-w-4xl flex-col items-center px-4 pb-14 pt-[150px] sm:px-6 sm:pb-20 sm:pt-[170px]">
         {/* ── The invitation sheet ──────────────────────────── */}
         <article className="fade-in relative w-full rounded-[28px] border border-amber-500/60 bg-[#fffaf2] p-2 shadow-[0_30px_80px_-25px_rgba(140,70,30,0.45)] sm:p-3">
           <div className="relative rounded-[20px] border border-amber-500/40 px-6 py-12 text-center sm:px-14 sm:py-16">
@@ -139,6 +130,15 @@ export default function InvitePage({ lang }: { lang: Lang }) {
             </p>
           </div>
         </article>
+
+        <Link
+          href={t.switchTo.href}
+          lang={lang === "en" ? "kn" : "en"}
+          className="fade-in mt-10 inline-flex items-center gap-2 rounded-full border border-amber-400/70 bg-white/70 px-4 py-1.5 text-xs font-medium text-[#7a1f2b] shadow-sm backdrop-blur-sm transition hover:bg-amber-50"
+        >
+          <span aria-hidden>🌐</span>
+          {t.switchTo.label}
+        </Link>
 
         {/* ── Share ─────────────────────────────────────────── */}
         <section className="fade-in mt-12 w-full max-w-2xl text-center sm:mt-16">
