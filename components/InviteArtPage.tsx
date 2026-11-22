@@ -111,20 +111,27 @@ export default function InviteArtPage({ lang }: { lang: Lang }) {
       {/* wide screens: blurred copy of the art around the column */}
       <div
         aria-hidden
-        className="fixed inset-0 -z-10 hidden scale-110 bg-cover bg-center opacity-50 blur-2xl sm:block"
+        className="fixed inset-0 -z-10 hidden scale-110 bg-cover bg-center opacity-50 blur-2xl sm:block lg:hidden"
         style={{ backgroundImage: `url(${ART})` }}
       />
 
-      <main className="mx-auto min-h-screen max-w-[480px] bg-[#fdf3e6] sm:shadow-[0_0_80px_-10px_rgba(90,42,16,0.45)]">
+      <main className="mx-auto min-h-screen max-w-[480px] bg-[#fdf3e6] sm:shadow-[0_0_80px_-10px_rgba(90,42,16,0.45)] lg:grid lg:max-w-none lg:grid-cols-[auto_1fr] lg:shadow-none">
         {/* ── The illustration ─────────────────────────────── */}
-        <div className="relative">
+        {/* desktop: the art is a full-height panel on the left that stays put
+            while the details scroll on the right */}
+        <div className="relative lg:sticky lg:top-0 lg:h-screen">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={ART}
             alt={`${t.first} & ${t.second}`}
             width={1100}
             height={1971}
-            className="block h-auto w-full"
+            className="block h-auto w-full lg:h-screen lg:w-auto"
+          />
+          {/* desktop: soften the seam with the details panel */}
+          <div
+            aria-hidden
+            className="absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-r from-[#fdf3e6]/0 to-[#fdf3e6] lg:block"
           />
           {/* fade into the page (also hides the generator's corner mark) */}
           <div
@@ -137,7 +144,7 @@ export default function InviteArtPage({ lang }: { lang: Lang }) {
         </div>
 
         {/* ── Details ──────────────────────────────────────── */}
-        <section className="relative -mt-16 px-6 pb-14 text-center">
+        <section className="relative -mt-16 px-6 pb-14 text-center lg:mx-auto lg:mt-0 lg:flex lg:min-h-screen lg:w-full lg:max-w-2xl lg:flex-col lg:items-center lg:justify-center lg:px-12 lg:py-16">
           <p className="text-[0.7rem] font-medium uppercase tracking-[0.3em] text-[#9a5a3a]">
             {t.eyebrow}
           </p>
@@ -155,13 +162,13 @@ export default function InviteArtPage({ lang }: { lang: Lang }) {
 
           {/* stacked with a short gold rule between (side by side, the long
               dates wrap even in the 480px column) */}
-          <div className="mt-8 flex flex-col items-center gap-6">
+          <div className="mt-8 flex flex-col items-center gap-6 lg:grid lg:grid-cols-[1fr_1px_1fr] lg:items-center lg:gap-8">
             {t.events.map((ev, i) => (
               <div key={ev.id} className="contents">
                 {i > 0 && (
                   <div
                     aria-hidden
-                    className="h-px w-20 bg-gradient-to-r from-transparent via-amber-500/70 to-transparent"
+                    className="h-px w-20 bg-gradient-to-r from-transparent via-amber-500/70 to-transparent lg:h-28 lg:w-px lg:bg-gradient-to-b"
                   />
                 )}
                 <div>
