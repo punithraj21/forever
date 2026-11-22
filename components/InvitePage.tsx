@@ -12,6 +12,7 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import PetalEasterEgg from "@/components/PetalEasterEgg";
+import DaysToGo from "@/components/DaysToGo";
 import ShareButtons from "@/components/ShareButtons";
 import WeddingBackdrop, { GoldOrnament } from "@/components/WeddingBackdrop";
 import { VENUE_MAPS_URL } from "@/lib/calendar";
@@ -62,6 +63,9 @@ export default function InvitePage({ lang }: { lang: Lang }) {
             <Corner className="bottom-2 right-2 rotate-180" />
             <Corner className="bottom-2 left-2 -rotate-90" />
 
+            <p className="mb-5 font-serif text-lg text-[#9a5a3a] sm:text-xl">
+              {t.opening}
+            </p>
             <p className="text-[0.7rem] font-medium uppercase tracking-[0.3em] text-[#9a5a3a] sm:text-xs">
               {t.eyebrow}
             </p>
@@ -73,8 +77,12 @@ export default function InvitePage({ lang }: { lang: Lang }) {
               {t.invitation}
             </p>
 
+            <div className="mt-8">
+              <DaysToGo labels={t.daysToGo} year={2027} month={2} day={11} />
+            </div>
+
             {/* the two celebrations */}
-            <div className="mx-auto mt-12 grid max-w-2xl items-center gap-8 sm:mt-14 md:grid-cols-[1fr_auto_1fr] md:gap-10">
+            <div className="mx-auto mt-10 grid max-w-2xl items-center gap-8 sm:mt-12 md:grid-cols-[1fr_auto_1fr] md:gap-10">
               {t.events.map((ev, i) => (
                 <Fragment key={ev.id}>
                   {i > 0 && (

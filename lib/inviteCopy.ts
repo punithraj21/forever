@@ -16,6 +16,8 @@ type EventCopy = {
 type InviteCopy = {
   htmlLang: string;
   switchTo: { label: string; href: string };
+  opening: string; // auspicious line above everything
+  daysToGo: { many: string; one: string; today: string; done: string }; // {n} = days
   eyebrow: string;
   first: string;
   second: string;
@@ -45,6 +47,13 @@ export const INVITE_COPY = {
   en: {
     htmlLang: "en",
     switchTo: { label: "ಕನ್ನಡದಲ್ಲಿ ಓದಿ", href: "/kn/invite" },
+    opening: "|| Shri Ganeshaya Namaha ||",
+    daysToGo: {
+      many: "{n} days to go",
+      one: "Tomorrow is the Muhurtha",
+      today: "Today is the Muhurtha",
+      done: "With your blessings, we are married",
+    },
     eyebrow: "With joy, we invite you",
     first: "Punith",
     second: "Pallavi",
@@ -91,6 +100,13 @@ export const INVITE_COPY = {
   kn: {
     htmlLang: "kn",
     switchTo: { label: "Read in English", href: "/en/invite" },
+    opening: "|| ಶ್ರೀ ಗಣೇಶಾಯ ನಮಃ ||",
+    daysToGo: {
+      many: "ಇನ್ನು {n} ದಿನಗಳು",
+      one: "ನಾಳೆ ಮುಹೂರ್ತ",
+      today: "ಇಂದು ಮುಹೂರ್ತ",
+      done: "ನಿಮ್ಮೆಲ್ಲರ ಆಶೀರ್ವಾದದಿಂದ ವಿವಾಹ ನೆರವೇರಿದೆ",
+    },
     eyebrow: "ಸಂತೋಷದಿಂದ ಆಹ್ವಾನಿಸುತ್ತೇವೆ",
     first: "ಪುನೀತ್",
     second: "ಪಲ್ಲವಿ",
