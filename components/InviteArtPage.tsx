@@ -20,6 +20,19 @@ const PLAQUE_TITLE: Record<Lang, string> = {
   kn: "ವಿವಾಹ ಆಹ್ವಾನ",
 };
 const OTHER: Record<Lang, string> = { en: "/kn/invite2", kn: "/invite2" };
+// short captions under the round share buttons
+const SHARE_SHORT: Record<
+  Lang,
+  { whatsapp: string; native: string; copy: string; copied: string }
+> = {
+  en: { whatsapp: "WhatsApp", native: "Share", copy: "Copy", copied: "Copied!" },
+  kn: {
+    whatsapp: "WhatsApp",
+    native: "ಹಂಚಿ",
+    copy: "ನಕಲಿಸಿ",
+    copied: "ನಕಲಿಸಲಾಗಿದೆ!",
+  },
+};
 
 const PLAQUE_PATH =
   "M-118 -24 Q-118 -40 -96 -38 L-40 -38 Q-30 -48 0 -48 Q30 -48 40 -38 L96 -38 Q118 -40 118 -24 L118 24 Q118 40 96 38 L40 38 Q30 48 0 48 Q-30 48 -40 38 L-96 38 Q-118 40 -118 24 Z";
@@ -215,15 +228,17 @@ export default function InviteArtPage({ lang }: { lang: Lang }) {
             {t.share.heading}
           </h2>
           <p className="mb-5 mt-1 text-sm text-[#7a5560]">{t.share.note}</p>
-          <ShareButtons labels={t.share} />
+          <ShareButtons labels={t.share} short={SHARE_SHORT[lang]} />
 
           <Link
             href={OTHER[lang]}
             lang={lang === "en" ? "kn" : "en"}
-            className="mt-8 inline-flex items-center gap-2 rounded-full border border-amber-400/70 bg-white/70 px-4 py-1.5 text-xs font-medium text-[#7a1f2b] shadow-sm transition hover:bg-amber-50"
+            className="mt-8 inline-flex items-center gap-2 text-xs font-medium tracking-[0.06em] text-[#9a5a3a]"
           >
             <span aria-hidden>🌐</span>
-            {t.switchTo.label}
+            <span className="border-b border-amber-500/70 pb-0.5 transition hover:text-[#7a1f2b]">
+              {t.switchTo.label}
+            </span>
           </Link>
 
           <p className="mt-10 font-serif text-base italic text-[#9a7080]">
