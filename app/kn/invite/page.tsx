@@ -4,7 +4,7 @@ import InvitePage from "@/components/InvitePage";
 // Kannada invitation. The preview image is the English card (next/og can't
 // shape Kannada); the title and description are in Kannada.
 
-const OG_IMAGE = "/og-invite.jpg";
+const OG_IMAGE = "/og-invite-kn.jpg";
 const TITLE = "ಪುನೀತ್ & ಪಲ್ಲವಿ · ವಿವಾಹ ಆಹ್ವಾನ";
 const DESCRIPTION =
   "ಆರತಕ್ಷತೆ: ಬುಧವಾರ, ಫೆಬ್ರವರಿ 10, 2027 · ಸಂಜೆ 7 ಗಂಟೆಯಿಂದ. ಮುಹೂರ್ತ: ಗುರುವಾರ, ಫೆಬ್ರವರಿ 11, 2027 · ಬೆಳಿಗ್ಗೆ 11:30. ಎನ್.ಎಸ್. ಕನ್ವೆನ್ಷನ್ ಹಾಲ್, ದೊಡ್ಡಬಳ್ಳಾಪುರ.";
