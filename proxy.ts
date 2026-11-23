@@ -3,8 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 // Host-based defaults (rewrites, so the address bar is unchanged):
 // - wedding.devshark.site defaults to Kannada: "/" serves /kn and "/invite"
 //   serves /kn/invite. English lives at /en and /en/invite there.
-// - pallavipunith.site (+ www) opens the invitation: "/" serves /invite.
-//   The countdown home is still reachable there at /en (and /kn).
+// - pallavipunith.site (+ www) opens the interactive invitation: "/" serves
+//   /invite3 (was /invite until Punith swapped them). /invite, /invite2 and
+//   the countdown home (/en, /kn) are all still reachable there.
 // forever.devshark.site and every other host are untouched.
 const KANNADA_DEFAULT_HOSTS = new Set(["wedding.devshark.site"]);
 const INVITE_DEFAULT_HOSTS = new Set([
@@ -20,7 +21,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.rewrite(new URL(target, request.url));
   }
   if (INVITE_DEFAULT_HOSTS.has(host) && pathname === "/") {
-    return NextResponse.rewrite(new URL("/invite", request.url));
+    return NextResponse.rewrite(new URL("/invite3", request.url));
   }
   return NextResponse.next();
 }
