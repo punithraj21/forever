@@ -315,6 +315,22 @@ function burstPetals(count = 34) {
   window.setTimeout(() => box.remove(), 10000);
 }
 
+/** Gold dust rising from the middle of the screen while the book opens. */
+function burstSparkles(count = 28) {
+  if (typeof document === "undefined") return;
+  const box = document.createElement("div");
+  box.className = "i3-fx";
+  for (let i = 0; i < count; i++) {
+    const d = document.createElement("span");
+    d.className = "i3-spark";
+    const size = 3 + Math.random() * 5;
+    d.style.cssText = `left:${50 + (Math.random() - 0.5) * 46}%;top:${44 + Math.random() * 12}%;width:${size}px;height:${size}px;--dx:${(Math.random() - 0.5) * 120}px;--dy:${-(110 + Math.random() * 260)}px;animation-duration:${1.6 + Math.random() * 1.6}s;animation-delay:${Math.random() * 0.9}s`;
+    box.appendChild(d);
+  }
+  document.body.appendChild(box);
+  window.setTimeout(() => box.remove(), 5000);
+}
+
 function burstConfetti(originY: number, count = 46) {
   if (typeof document === "undefined") return;
   const box = document.createElement("div");
@@ -896,8 +912,10 @@ export default function Invite3({ lang }: { lang: Lang }) {
   function openBook() {
     if (!ready || phase !== "closed") return;
     setPhase("opening");
+    navigator.vibrate?.(25);
     burstPetals(30);
-    window.setTimeout(() => setPhase("open"), 2300);
+    window.setTimeout(() => burstSparkles(), 550);
+    window.setTimeout(() => setPhase("open"), 3700);
   }
 
   const started = phase === "open";
@@ -1121,7 +1139,7 @@ export default function Invite3({ lang }: { lang: Lang }) {
       {/* ── 0. the book (opening) ─────────────────────────────── */}
       {phase !== "open" && (
         <div
-          className={`fixed inset-0 z-50 flex flex-col items-center justify-center ${phase === "opening" ? "i3-overlay-out" : ""}`}
+          className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden ${phase === "opening" ? "i3-overlay-out" : ""}`}
           style={{ background: "radial-gradient(ellipse at 50% 40%,#fff3ee,#f6dcd8 70%)" }}
         >
           {/* blurred roses in front of and behind the book */}
@@ -1129,53 +1147,122 @@ export default function Invite3({ lang }: { lang: Lang }) {
           <RoseCluster className="i3-sway-b absolute -bottom-8 -right-8 h-36 w-44 rotate-180 opacity-70 blur-[3px]" />
           <RoseCluster className="i3-sway-b absolute right-[-30px] top-[14%] h-28 w-36 -scale-x-100 opacity-50 blur-[2px]" />
 
+          {/* warm light that wells up behind the book as it opens */}
           <div
-            className={phase === "opening" ? "i3-zoom" : ""}
-            style={{ perspective: 1400 }}
-          >
+            aria-hidden
+            className={`absolute left-1/2 top-[42%] h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full ${phase === "opening" ? "i3-glow-on" : "i3-glow-idle"}`}
+            style={{ background: "radial-gradient(circle,rgba(255,226,150,.85),rgba(255,226,150,0) 65%)" }}
+          />
+
+          <div className="i3-float" style={{ perspective: 1600 }}>
             <button
               type="button"
               onClick={openBook}
               disabled={!ready}
               aria-label={c.tapToOpen}
-              className="relative block cursor-pointer"
+              className={`relative block cursor-pointer ${phase === "opening" ? "i3-book-open" : "i3-book-idle"}`}
               style={{ width: "min(72vw,300px)", aspectRatio: "3 / 4.1", transformStyle: "preserve-3d" }}
             >
-              {/* first page peeking behind the cover */}
+              {/* soft contact shadow on the table */}
+              <span
+                aria-hidden
+                className="absolute inset-x-[6%] -bottom-7 h-8 rounded-[50%]"
+                style={{ background: "radial-gradient(ellipse,rgba(60,10,25,.45),rgba(60,10,25,0) 70%)" }}
+              />
+
+              {/* the right-hand page, with the paper stack showing at its edges */}
               <span
                 aria-hidden
                 className="absolute inset-0 rounded-r-xl"
-                style={{ background: IVORY, boxShadow: "0 30px 50px -20px rgba(110,31,47,.55)", border: `1px solid ${GOLD}` }}
-              />
-              {/* the cover (hinged on the left edge) */}
-              <span
-                aria-hidden
-                className="i3-cover absolute inset-0 flex flex-col items-center justify-center rounded-r-xl"
                 style={{
-                  transformOrigin: "left center",
-                  transformStyle: "preserve-3d",
-                  backfaceVisibility: "hidden",
-                  background: "linear-gradient(135deg,#8a2a40,#5e1626 60%,#4a0f1d)",
-                  boxShadow: "0 30px 50px -18px rgba(60,10,25,.7), inset 0 0 0 1px rgba(255,255,255,.08)",
-                  transform: phase === "opening" ? "rotateY(-168deg)" : "rotateY(0deg)",
-                  transition: "transform 1.5s cubic-bezier(.5,.1,.2,1)",
+                  background: `linear-gradient(90deg,#efe2c4,${IVORY} 14%)`,
+                  border: `1px solid ${GOLD}`,
+                  boxShadow:
+                    "2px 0 0 #efe3c9, 4px 0 0 #e6d6b5, 6px 0 0 #dcc9a1, 8px 0 0 #cdb583, 0 2px 0 #e6d6b5, 0 4px 0 #dcc9a1, 14px 22px 40px -14px rgba(60,10,25,.55)",
                 }}
               >
                 <span
-                  className="absolute inset-3 rounded-r-lg"
-                  style={{ border: `2px solid ${GOLD}` }}
+                  className="absolute inset-[14%] flex items-start justify-center"
+                  style={{ border: `1px solid rgba(201,162,74,.55)`, borderRadius: "999px 999px 10px 10px" }}
                 />
-                <span className="absolute inset-[18px] rounded-r-md" style={{ border: `1px solid rgba(236,214,152,.5)` }} />
-                <span className="absolute inset-y-0 left-0 w-3" style={{ background: "linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,0))" }} />
-                <Emblem size={84} />
-                <span className="i3-serif mt-6 text-lg tracking-wide" style={{ color: CHAMPAGNE }}>
-                  {t.first} &amp; {t.second}
+              </span>
+
+              {/* two loose pages that flutter over as the cover swings */}
+              {[
+                { rot: -158, delay: 0.95, z: 1 },
+                { rot: -163, delay: 0.8, z: 2 },
+              ].map((l, i) => (
+                <span
+                  key={i}
+                  aria-hidden
+                  className="absolute inset-0 rounded-r-xl"
+                  style={{
+                    transformOrigin: "left center",
+                    background: `linear-gradient(90deg,#e9dcbc,${IVORY} 20%,#f3ead5)`,
+                    border: `1px solid rgba(201,162,74,.6)`,
+                    transform: phase === "opening" ? `translateZ(${l.z}px) rotateY(${l.rot}deg)` : `translateZ(${l.z}px) rotateY(0deg)`,
+                    transition: `transform 1.35s cubic-bezier(.45,.05,.2,1) ${l.delay}s`,
+                  }}
+                />
+              ))}
+
+              {/* the cover (hinged on the spine): wine velvet outside, ivory inside */}
+              <span
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  transformOrigin: "left center",
+                  transformStyle: "preserve-3d",
+                  transform: phase === "opening" ? "translateZ(3px) rotateY(-172deg)" : "translateZ(3px) rotateY(0deg)",
+                  transition: "transform 1.5s cubic-bezier(.45,.05,.2,1) .6s",
+                }}
+              >
+                {/* outside */}
+                <span
+                  className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden rounded-r-xl"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    background: "linear-gradient(135deg,#8a2a40,#5e1626 60%,#4a0f1d)",
+                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,.08), inset -6px 0 14px rgba(0,0,0,.25)",
+                  }}
+                >
+                  <span className="absolute inset-3 rounded-r-lg" style={{ border: `2px solid ${GOLD}` }} />
+                  <span className="absolute inset-[18px] rounded-r-md" style={{ border: `1px solid rgba(236,214,152,.5)` }} />
+                  <span className="absolute inset-y-0 left-0 w-3" style={{ background: "linear-gradient(90deg,rgba(0,0,0,.4),rgba(0,0,0,0))" }} />
+                  <span className="relative">
+                    <span aria-hidden className="i3-ripple absolute inset-0 rounded-full" />
+                    <span aria-hidden className="i3-ripple absolute inset-0 rounded-full" style={{ animationDelay: "1.1s" }} />
+                    <Emblem size={84} />
+                  </span>
+                  <span className="i3-serif mt-6 text-lg tracking-wide" style={{ color: CHAMPAGNE }}>
+                    {t.first} &amp; {t.second}
+                  </span>
+                  {/* a slow shine sweeping over the velvet */}
+                  <span aria-hidden className="i3-shine absolute inset-0" />
+                </span>
+                {/* inside of the cover (what you see once it has swung open) */}
+                <span
+                  className="absolute inset-0 flex items-center justify-center rounded-l-xl"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    transform: "rotateY(180deg)",
+                    background: `linear-gradient(270deg,#e9dcbc,${IVORY} 24%,#f6eedb)`,
+                    border: `1px solid ${GOLD}`,
+                    boxShadow: "inset 8px 0 18px -8px rgba(110,31,47,.25)",
+                  }}
+                >
+                  <span className="absolute inset-[9%]" style={{ border: `1px solid rgba(201,162,74,.6)`, borderRadius: "10px" }} />
+                  <span className="absolute inset-[13%]" style={{ border: `1px solid rgba(201,162,74,.3)`, borderRadius: "8px" }} />
+                  <Emblem size={54} />
                 </span>
               </span>
             </button>
           </div>
 
-          <p className="i3-sans mt-10 text-[0.7rem] uppercase tracking-[0.3em]" style={{ color: WINE }}>
+          <p
+            className="i3-sans relative mt-14 text-[0.7rem] uppercase tracking-[0.3em] transition-opacity duration-500"
+            style={{ color: WINE, opacity: phase === "opening" ? 0 : 1 }}
+          >
             {ready ? <span className="i3-pulse-text">{c.tapToOpen}</span> : c.loading}
           </p>
         </div>
@@ -1231,10 +1318,34 @@ const CSS = `
 @keyframes i3-pulse-text{0%,100%{opacity:.55}50%{opacity:1}}
 .i3-pulse-text{animation:i3-pulse-text 1.8s ease-in-out infinite}
 
-@keyframes i3-zoom{0%,55%{transform:scale(1)}100%{transform:scale(2.6)}}
-.i3-zoom{animation:i3-zoom 2.3s cubic-bezier(.6,.1,.3,1) forwards}
-@keyframes i3-overlay-out{0%,60%{opacity:1}100%{opacity:0}}
-.i3-overlay-out{animation:i3-overlay-out 2.3s ease forwards}
+@keyframes i3-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.i3-float{animation:i3-float 4.2s ease-in-out infinite}
+/* resting pose: the book sits slightly turned, like it was set down on a table */
+.i3-book-idle,.i3-book-open{transform-origin:left center}
+.i3-book-idle{transform:rotateX(9deg) rotateY(-16deg);animation:i3-book-sway 5.5s ease-in-out infinite}
+@keyframes i3-book-sway{0%,100%{transform:rotateX(9deg) rotateY(-17deg)}50%{transform:rotateX(7deg) rotateY(-12deg)}}
+/* opening: straighten + lift, swing the cover (separate transition), shrink so both pages fit, then the camera pushes in on the right-hand page.
+   Origin is the spine, so translateX(50%) puts the spine mid-screen and translateX(-45%) + scale(1.9) frames the right page. */
+@keyframes i3-book-open{
+  0%{transform:rotateX(9deg) rotateY(-16deg) translateX(0) scale(1);animation-timing-function:cubic-bezier(.3,.7,.2,1)}
+  16%{transform:rotateX(0) rotateY(0) translateX(0) scale(1.05);animation-timing-function:cubic-bezier(.45,.05,.2,1)}
+  58%{transform:rotateX(0) rotateY(0) translateX(50%) scale(.62)}
+  64%{transform:rotateX(0) rotateY(0) translateX(50%) scale(.62);animation-timing-function:cubic-bezier(.65,0,.25,1)}
+  100%{transform:rotateX(0) rotateY(0) translateX(-45%) scale(1.9)}
+}
+.i3-book-open{animation:i3-book-open 3.6s forwards}
+@keyframes i3-overlay-out{0%,78%{opacity:1}100%{opacity:0}}
+.i3-overlay-out{animation:i3-overlay-out 3.6s ease forwards}
+@keyframes i3-glow-idle{0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(.85)}50%{opacity:.55;transform:translate(-50%,-50%) scale(.95)}}
+.i3-glow-idle{animation:i3-glow-idle 4s ease-in-out infinite}
+@keyframes i3-glow-on{0%{opacity:.4;transform:translate(-50%,-50%) scale(.85)}35%{opacity:1;transform:translate(-50%,-50%) scale(1.25)}100%{opacity:.9;transform:translate(-50%,-50%) scale(2.2)}}
+.i3-glow-on{animation:i3-glow-on 3.6s ease-out forwards}
+@keyframes i3-shine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+.i3-shine{background:linear-gradient(105deg,transparent 40%,rgba(255,236,190,.28) 50%,transparent 60%);animation:i3-shine 4.2s ease-in-out infinite}
+@keyframes i3-ripple{0%{transform:scale(1);opacity:.55;box-shadow:0 0 0 0 rgba(236,214,152,.7)}100%{transform:scale(1.9);opacity:0}}
+.i3-ripple{border:1.5px solid rgba(236,214,152,.8);animation:i3-ripple 2.2s ease-out infinite}
+@keyframes i3-spark{0%{transform:translate3d(0,0,0) scale(.4);opacity:0}15%{opacity:1}100%{transform:translate3d(var(--dx),var(--dy),0) scale(1);opacity:0}}
+.i3-spark{position:absolute;border-radius:50%;background:radial-gradient(circle,#fff6c8,#e8c25a 60%,rgba(232,194,90,0));opacity:0;animation:i3-spark ease-out forwards;will-change:transform}
 
 .i3-fx{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden}
 @keyframes i3-fall{0%{transform:translate3d(0,-12vh,0) rotate(0);opacity:0}10%{opacity:1}100%{transform:translate3d(var(--dx),112vh,0) rotate(var(--rot));opacity:.9}}
