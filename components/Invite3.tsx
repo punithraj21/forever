@@ -569,7 +569,10 @@ function SaveTheDate({
   return (
     <section ref={sectionRef} className="relative select-none px-6 py-16 text-center">
       <Reveal>
-        <h2 className="i3-serif text-3xl" style={{ color: WINE }}>
+        <h2
+          className={`i3-serif ${lang === "kn" ? "text-2xl" : "text-3xl"}`}
+          style={{ color: WINE }}
+        >
           {c.saveTheDate}
         </h2>
         <p className="i3-sans mt-2 text-[0.65rem] uppercase tracking-[0.3em] text-[#9a5a3a]">
