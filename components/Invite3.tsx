@@ -48,11 +48,24 @@ const OTHER: Record<Lang, string> = { en: "/kn/invite3", kn: "/invite3" };
 /* ───────────────────────── small helpers ───────────────────────── */
 
 function graphemes(text: string): string[] {
-  if (typeof Intl !== "undefined" && "Segmenter" in Intl) {
-    const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
-    return Array.from(seg.segment(text), (s) => s.segment);
+  const parts =
+    typeof Intl !== "undefined" && "Segmenter" in Intl
+      ? Array.from(
+          new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text),
+          (x) => x.segment,
+        )
+      : Array.from(text);
+  // Indic conjuncts (ಲ್ + ಲ = ಲ್ಲ) are one glyph cluster, but Segmenter may
+  // split after the virama. Each piece becomes its own inline-block span, so a
+  // split would show the conjunct broken apart ("ಪಲ್ ಲವಿ"). Glue any piece that
+  // ends in a virama (Kannada U+0CCD, Devanagari U+094D) to the next one.
+  const out: string[] = [];
+  for (const g of parts) {
+    const last = out[out.length - 1];
+    if (last && /[\u0CCD\u094D]$/.test(last)) out[out.length - 1] = last + g;
+    else out.push(g);
   }
-  return Array.from(text);
+  return out;
 }
 
 /** Letter-by-letter reveal with a soft blur-in on each letter. */
