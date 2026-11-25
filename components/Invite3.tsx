@@ -137,8 +137,9 @@ function Reveal({
   );
 }
 
-/** Gold medallion. The guide asks for a Ganesh ji emblem; this is an Om in a
- *  gold ring — swap in a Ganesh image here if one becomes available. */
+/** Gold medallion with the Ganesh ji emblem (Punith's artwork, cut out to
+ *  `public/ganesha-wine.png`: wine line-art on transparent, drawn on the gold
+ *  disc). A plain <img> so it needs no loader and prerenders as-is. */
 function Emblem({ size = 64 }: { size?: number }) {
   return (
     <div
@@ -153,20 +154,15 @@ function Emblem({ size = 64 }: { size?: number }) {
           "0 8px 18px -6px rgba(110,31,47,.5), inset 0 0 0 3px rgba(255,255,255,.35)",
       }}
     >
-      <div
-        className="flex items-center justify-center rounded-full"
-        style={{
-          width: size - 12,
-          height: size - 12,
-          border: "1.5px solid rgba(110,31,47,.55)",
-          color: WINE,
-          fontSize: size * 0.46,
-          lineHeight: 1,
-          fontFamily: "'Noto Sans Devanagari', 'Kohinoor Devanagari', serif",
-        }}
-      >
-        ॐ
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/ganesha-wine.png"
+        alt=""
+        draggable={false}
+        width={480}
+        height={480}
+        style={{ width: size * 0.74, height: size * 0.74 }}
+      />
     </div>
   );
 }
