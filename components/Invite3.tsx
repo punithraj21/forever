@@ -534,46 +534,32 @@ function SaveTheDate({
   eventTime: string;
 }) {
   const c = INVITE3_COPY[lang];
-  const [progress, setProgress] = useState(0); // 0 rolled … 1 fully open
-  const [dragging, setDragging] = useState(false);
+  // The scroll is simply open (Punith: pulling a tassel is too fiddly for
+  // elderly guests). A small confetti + petal burst fires once, the first
+  // time the section scrolls into view, so it still feels like a reveal.
   const done = useRef(false);
-  const start = useRef<{ y: number; p: number; moved: boolean } | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const FULL = 250;
+  const h = 34 + FULL;
 
-  const finish = useCallback(() => {
-    setProgress(1);
-    if (!done.current) {
-      done.current = true;
-      const r = sectionRef.current?.getBoundingClientRect();
-      burstConfetti(r ? Math.max(120, r.top + 160) : 240);
-      burstPetals(18);
-    }
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting && !done.current) {
+          done.current = true;
+          const r = el.getBoundingClientRect();
+          burstConfetti(Math.max(120, r.top + 200));
+          burstPetals(14);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.45 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
-
-  function onDown(e: RPointerEvent) {
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    start.current = { y: e.clientY, p: progress, moved: false };
-    setDragging(true);
-  }
-  function onMove(e: RPointerEvent) {
-    const s = start.current;
-    if (!s) return;
-    const dy = e.clientY - s.y;
-    if (Math.abs(dy) > 5) s.moved = true;
-    setProgress(Math.min(1, Math.max(0, s.p + dy / FULL)));
-  }
-  function onUp() {
-    const s = start.current;
-    start.current = null;
-    setDragging(false);
-    if (!s) return;
-    if (!s.moved || progress > 0.45) finish();
-    else setProgress(0);
-  }
-
-  const h = 34 + progress * FULL;
-  const open = progress > 0.55;
 
   // live countdown
   const [left, setLeft] = useState<number | null>(null);
@@ -600,9 +586,6 @@ function SaveTheDate({
         >
           {c.saveTheDate}
         </h2>
-        <p className="i3-sans mt-2 text-[0.65rem] uppercase tracking-[0.3em] text-[#9a5a3a]">
-          {progress === 0 ? c.pullHint : " "}
-        </p>
       </Reveal>
 
       <div className="relative mx-auto mt-6 w-[min(86vw,330px)]">
@@ -623,7 +606,6 @@ function SaveTheDate({
           className="relative z-0 mx-auto -mt-1 w-[92%] overflow-hidden rounded-b-2xl"
           style={{
             height: h,
-            transition: dragging ? "none" : "height .7s cubic-bezier(.2,.7,.2,1)",
             background:
               "linear-gradient(90deg,#e9d6a6,#fbf1d4 12%,#fffaf0 50%,#fbf1d4 88%,#e9d6a6)",
             border: `1.5px solid ${GOLD}`,
@@ -639,11 +621,7 @@ function SaveTheDate({
           />
           <div
             className="flex h-full flex-col items-center justify-center px-4 text-center"
-            style={{
-              opacity: open ? 1 : 0,
-              transition: "opacity .5s",
-              minHeight: FULL,
-            }}
+            style={{ minHeight: FULL }}
           >
             <Emblem size={44} />
             <p className="i3-sans mt-3 text-[0.6rem] uppercase tracking-[0.3em]" style={{ color: "#9a5a3a" }}>
@@ -660,21 +638,11 @@ function SaveTheDate({
           <RoseCluster className="absolute -bottom-3 -right-4 h-16 w-20 rotate-180 opacity-95" />
         </div>
 
-        {/* cord + tassel (drag down, or tap) */}
+        {/* cord + tassel (decorative) */}
         <div
-          className="relative z-20 mx-auto flex w-10 cursor-grab touch-none flex-col items-center active:cursor-grabbing"
-          style={{
-            marginTop: -2,
-            transform: "translateY(0)",
-          }}
-          onPointerDown={onDown}
-          onPointerMove={onMove}
-          onPointerUp={onUp}
-          onPointerCancel={onUp}
-          role="button"
-          aria-label={c.pullHint}
-          tabIndex={0}
-          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && finish()}
+          aria-hidden
+          className="pointer-events-none relative z-20 mx-auto flex w-10 flex-col items-center"
+          style={{ marginTop: -2 }}
         >
           <span className="h-5 w-[3px]" style={{ background: GOLD }} />
           <span
@@ -689,11 +657,6 @@ function SaveTheDate({
               boxShadow: "0 6px 8px -4px rgba(0,0,0,.4)",
             }}
           />
-          {progress === 0 && (
-            <span aria-hidden className="i3-finger mt-2 text-2xl">
-              👇
-            </span>
-          )}
         </div>
       </div>
 
