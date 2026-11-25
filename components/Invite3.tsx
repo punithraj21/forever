@@ -45,6 +45,11 @@ const WEDDING_AT = Date.UTC(2027, 1, 11, 6, 0, 0);
 
 const OTHER: Record<Lang, string> = { en: "/kn/invite3", kn: "/invite3" };
 
+// "Our Story" photo carousel is hidden for now (Punith: add it later, with
+// real pictures). Flip to true and replace the two images in the section
+// below (COUPLE / ART) and the captions in lib/invite3Copy.ts.
+const SHOW_OUR_STORY = false;
+
 /* ───────────────────────── small helpers ───────────────────────── */
 
 function graphemes(text: string): string[] {
@@ -1034,46 +1039,48 @@ export default function Invite3({ lang }: { lang: Lang }) {
         </section>
 
         {/* ── 4. our story ─────────────────────────────────── */}
-        <section className="relative px-4 py-14 text-center">
-          <Reveal>
-            <h2 className="i3-serif text-3xl" style={{ color: WINE }}>
-              {c.story}
-            </h2>
-          </Reveal>
-          <Reveal className="mt-8" delay={100}>
-            <Carousel3D
-              label={c.story}
-              height={430}
-              cardWidth={250}
-              items={[
-                { src: COUPLE, pos: "50% 30%", cap: c.captions[0] },
-                { src: ART, pos: "50% 38%", cap: c.captions[1] },
-              ]}
-              render={(it) => (
-                <div
-                  className="h-full overflow-hidden rounded-[22px] p-2"
-                  style={{
-                    background: "#fffaf0",
-                    border: `2px solid ${GOLD}`,
-                    boxShadow: "0 24px 46px -18px rgba(110,31,47,.55)",
-                  }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={it.src}
-                    alt={it.cap}
-                    draggable={false}
-                    className="h-[345px] w-full rounded-2xl object-cover"
-                    style={{ objectPosition: it.pos }}
-                  />
-                  <p className="i3-serif px-2 pt-3 text-lg italic" style={{ color: WINE }}>
-                    {it.cap}
-                  </p>
-                </div>
-              )}
-            />
-          </Reveal>
-        </section>
+        {SHOW_OUR_STORY && (
+          <section className="relative px-4 py-14 text-center">
+            <Reveal>
+              <h2 className="i3-serif text-3xl" style={{ color: WINE }}>
+                {c.story}
+              </h2>
+            </Reveal>
+            <Reveal className="mt-8" delay={100}>
+              <Carousel3D
+                label={c.story}
+                height={430}
+                cardWidth={250}
+                items={[
+                  { src: COUPLE, pos: "50% 30%", cap: c.captions[0] },
+                  { src: ART, pos: "50% 38%", cap: c.captions[1] },
+                ]}
+                render={(it) => (
+                  <div
+                    className="h-full overflow-hidden rounded-[22px] p-2"
+                    style={{
+                      background: "#fffaf0",
+                      border: `2px solid ${GOLD}`,
+                      boxShadow: "0 24px 46px -18px rgba(110,31,47,.55)",
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={it.src}
+                      alt={it.cap}
+                      draggable={false}
+                      className="h-[345px] w-full rounded-2xl object-cover"
+                      style={{ objectPosition: it.pos }}
+                    />
+                    <p className="i3-serif px-2 pt-3 text-lg italic" style={{ color: WINE }}>
+                      {it.cap}
+                    </p>
+                  </div>
+                )}
+              />
+            </Reveal>
+          </section>
+        )}
 
         {/* ── 5. location ──────────────────────────────────── */}
         <LocationCard
