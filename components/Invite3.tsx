@@ -534,32 +534,42 @@ function SaveTheDate({
   eventTime: string;
 }) {
   const c = INVITE3_COPY[lang];
-  // The scroll is simply open (Punith: pulling a tassel is too fiddly for
-  // elderly guests). A small confetti + petal burst fires once, the first
-  // time the section scrolls into view, so it still feels like a reveal.
-  const done = useRef(false);
+  // The scroll unrolls by itself the first time it scrolls into view — no
+  // pulling or dragging (Punith: a tassel is too fiddly for elderly guests).
+  // A confetti + petal burst follows once it is open.
+  const [open, setOpen] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const FULL = 250;
-  const h = 34 + FULL;
+  const h = open ? 34 + FULL : 34;
 
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
+    let t = 0;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting && !done.current) {
-          done.current = true;
-          const r = el.getBoundingClientRect();
-          burstConfetti(Math.max(120, r.top + 200));
-          burstPetals(14);
-          io.disconnect();
-        }
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        t = window.setTimeout(() => setOpen(true), 500);
       },
-      { threshold: 0.45 },
+      { threshold: 0.5 },
     );
     io.observe(el);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      window.clearTimeout(t);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const t = window.setTimeout(() => {
+      const r = sectionRef.current?.getBoundingClientRect();
+      burstConfetti(r ? Math.max(120, r.top + 200) : 260);
+      burstPetals(14);
+    }, 900);
+    return () => window.clearTimeout(t);
+  }, [open]);
 
   // live countdown
   const [left, setLeft] = useState<number | null>(null);
@@ -606,6 +616,7 @@ function SaveTheDate({
           className="relative z-0 mx-auto -mt-1 w-[92%] overflow-hidden rounded-b-2xl"
           style={{
             height: h,
+            transition: "height 1.4s cubic-bezier(.3,.7,.2,1)",
             background:
               "linear-gradient(90deg,#e9d6a6,#fbf1d4 12%,#fffaf0 50%,#fbf1d4 88%,#e9d6a6)",
             border: `1.5px solid ${GOLD}`,
@@ -621,7 +632,11 @@ function SaveTheDate({
           />
           <div
             className="flex h-full flex-col items-center justify-center px-4 text-center"
-            style={{ minHeight: FULL }}
+            style={{
+              minHeight: FULL,
+              opacity: open ? 1 : 0,
+              transition: "opacity .8s ease .7s",
+            }}
           >
             <Emblem size={44} />
             <p className="i3-sans mt-3 text-[0.6rem] uppercase tracking-[0.3em]" style={{ color: "#9a5a3a" }}>
